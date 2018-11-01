@@ -1,18 +1,10 @@
 package nodomain.shvydkoy.chronicler.api.subcribtions;
 
-//Test
-
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
 import org.xmlpull.v1.XmlPullParserException;
-
-import nodomain.shvydkoy.chronicler.api.utils.loadfile.OpenStream;
-import nodomain.shvydkoy.chronicler.api.webfeed.Channel;
-import nodomain.shvydkoy.chronicler.api.webfeed.Item;
-import nodomain.shvydkoy.chronicler.api.webfeed.Parser;
-import nodomain.shvydkoy.chronicler.api.webfeed.parsingException.FailedParsingException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,6 +15,11 @@ import java.net.HttpURLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Calendar;
+
+import nodomain.shvydkoy.chronicler.api.utils.loadfile.OpenStream;
+import nodomain.shvydkoy.chronicler.api.webfeed.Channel;
+import nodomain.shvydkoy.chronicler.api.webfeed.Parser;
+import nodomain.shvydkoy.chronicler.api.webfeed.parsingException.FailedParsingException;
 
 
 
@@ -35,8 +32,7 @@ public final class SubsChannel extends Channel
     private Calendar SubsriptionDate;
     private Calendar LastUpdateDate;
     private File channelTempFile;
-
-    private int Test;
+    
 
 
     public SubsChannel(Channel parsedChannel)
