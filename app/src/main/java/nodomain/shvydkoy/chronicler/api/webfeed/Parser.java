@@ -1,20 +1,39 @@
+//TODO Refactor this mash!
+/*
+ 1) Replace declarations like "String TitleFieldName = "Title"
+                              String LinkFieldName = "Link"
+                                         ...                 "
+ with HashMap<String, String>.
 
+ 2) Reuse the code of Channel header parsing in Item Parsing.
+
+ 3) Try to employ tree in markup, or at least employ tree-borrowed algorithm of matching markup tags with document tag.
+
+ 4) Try to add class add a labda, converting Tag String field filled by the Parser with one formatted in general form.
+    For example: time-date strings in RSS2.0, RSS"1.0" and ATOM is are different. And they should be brought to a common
+    form, recognizable with Channel and Item constructors. Oh yes, change date-time Channel/Item fields type to appropriate one.
+
+ 5) Bring all the comments to common style (replace russian comments in the Parser).
+
+ *
+ */
 package nodomain.shvydkoy.chronicler.api.webfeed;
-
-import nodomain.shvydkoy.chronicler.api.webfeed.markup.*;
-import nodomain.shvydkoy.chronicler.api.webfeed.parsingException.FailedParsingException;
-import nodomain.shvydkoy.chronicler.api.webfeed.parsingException.NotifyingParsingException;
 
 import android.util.Log;
 import android.util.Xml;
 
-import java.io.InputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-
-
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+
+import nodomain.shvydkoy.chronicler.api.webfeed.markup.BankOfMarkups;
+import nodomain.shvydkoy.chronicler.api.webfeed.markup.Markup;
+import nodomain.shvydkoy.chronicler.api.webfeed.markup.Tag;
+import nodomain.shvydkoy.chronicler.api.webfeed.parsingException.FailedParsingException;
+import nodomain.shvydkoy.chronicler.api.webfeed.parsingException.NotifyingParsingException;
 
 import static nodomain.shvydkoy.chronicler.api.utils.URLUtil.isValidHttpOrHttpsURL;
 

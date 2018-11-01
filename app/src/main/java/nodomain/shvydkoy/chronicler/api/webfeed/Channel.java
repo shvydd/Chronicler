@@ -1,11 +1,11 @@
 package nodomain.shvydkoy.chronicler.api.webfeed;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 
-import java.net.URL;
-import nodomain.shvydkoy.chronicler.api.utils.URLUtil;
-import java.net.MalformedURLException;
 import nodomain.shvydkoy.chronicler.api.utils.StringUtil;
+import nodomain.shvydkoy.chronicler.api.utils.URLUtil;
 
 
 
@@ -18,7 +18,7 @@ public class Channel
 
     protected ArrayList<Item> ItemList;
 
-    protected String Language;  //Do I need special Class?
+    protected String Language;
     protected String Copyright;
 
     protected String ManagingEditor;

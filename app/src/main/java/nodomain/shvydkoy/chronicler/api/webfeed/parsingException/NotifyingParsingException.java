@@ -5,7 +5,7 @@ final public class NotifyingParsingException extends Exception
     final private static String exceptionName = "NotifyingParsingException: ";
     final private String message;
 
-    NotifyingParsingException(String message)
+    public NotifyingParsingException(String message)
     {
         this.message = message;
     }

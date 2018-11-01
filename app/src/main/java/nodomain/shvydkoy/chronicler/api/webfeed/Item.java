@@ -1,5 +1,6 @@
 package nodomain.shvydkoy.chronicler.api.webfeed;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.net.MalformedURLException;
@@ -30,7 +31,7 @@ public class Item
 
 
 
-    public Item(String title, String link, String description, String author, String category,
+    Item(String title, String link, String description, String author, String category,
                 String enclosure, String guid, String pubDate, String source, String content) throws IllegalArgumentException
     {
         if (StringUtil.isBlank(title))
@@ -199,6 +200,7 @@ public class Item
     }
 
     @Override
+    @NonNull
     public String toString()
     {
         return "Item:" +
@@ -214,8 +216,6 @@ public class Item
                 "\n\tContent: " + Content +
             "\nEnd of the Item.";
     }
-
-
 
 
 }

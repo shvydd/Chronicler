@@ -5,7 +5,7 @@ final public class FailedParsingException extends Exception
     final private static String exceptionName = "FailedParsingException: ";
     final private String message;
 
-    FailedParsingException(String message)
+    public FailedParsingException(String message)
     {
         this.message = message;
     }
