@@ -1,13 +1,13 @@
 package nodomain.shvydkoy.chronicler.api.subcribtions;
 
-import java.io.File;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 import nodomain.shvydkoy.chronicler.api.webfeed.Channel;
 
 
 
-public final class SubsChannel extends Channel
+final class SubsChannel extends Channel
 {
     private final static String FAILED_UPDATE_CHANNEL_CONNECTION_PROBLEM = "Failed to refresh the channel";
     private final static String FAILED_CREATE_TEMP_FILE = "Failed to save temp channel file";
@@ -15,20 +15,47 @@ public final class SubsChannel extends Channel
 
     private Calendar SubsriptionDate;
     private Calendar LastUpdateDate;
-    private File channelTempFile;
+    private ArrayList<SubsItem> SubsItemList;
 
 
 
-    public SubsChannel(Channel parsedChannel)
+    SubsChannel(Channel parsedChannel)
     {
-        super(parsedChannel);
+        super(parsedChannel,false);
 
         LastUpdateDate = Calendar.getInstance();
-
         if (SubsriptionDate == null)
         {
             SubsriptionDate = Calendar.getInstance();
         }
+
+        this.ItemList = null;
+        SubsItemList = new ArrayList<>();
+        addNewItems(parsedChannel);
+    }
+
+
+
+    final void addNewItems (final Channel parsedChannel)
+    {
+        if (parsedChannel.getItemList().size()>0)
+        {
+            this.SubsItemList.add(new SubsItem(parsedChannel.getItemList().get(0)));
+
+            throughNewItemsLoop: for (int i=parsedChannel.getItemList().size()-1; i>0 ; i--)
+            {
+                for (int j=0; j<SubsItemList.size(); j++)
+                {
+                    if ( parsedChannel.getItemList().get(i).equals(SubsItemList.get(j)))
+                    {
+                        continue throughNewItemsLoop;
+                    }
+                }
+                this.SubsItemList.add(0, new SubsItem(parsedChannel.getItemList().get(i)));
+            }
+
+        }
+
     }
 
     /*final public void update() throws UserNotifyingException
@@ -134,17 +161,8 @@ public final class SubsChannel extends Channel
     }*/
 
 
-    private void addNewItems (Channel channel)
-    {
-        for (int j=0; j<channel.getItemList().size(); j++)
-        {
-            for(int i=0; i<this.ItemList.size(); i++)
-            {
-                if ( ! channel.getItemList().get(j).equals(this.ItemList.get(i)) )
-                {
-                    this.addItem(new SubsItem(channel.getItemList().get(j)));
-                }
-            }
-        }
-    }
+
+
+
+
 }

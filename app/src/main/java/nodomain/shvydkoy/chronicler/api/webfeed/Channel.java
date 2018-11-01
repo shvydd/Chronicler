@@ -1,5 +1,7 @@
 package nodomain.shvydkoy.chronicler.api.webfeed;
 
+import android.support.annotation.NonNull;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -113,22 +115,36 @@ public class Channel
 
     }
 
-
-
-    final public boolean addItem(Item newItem)
+    protected Channel(Channel parsedChannel, boolean copyItemList)
     {
-        for (int i=0; i<ItemList.size(); i++)
+        if (copyItemList)
         {
-            if (ItemList.get(i).equals(newItem))
-            {
-                return false;
-            }
+            this.ItemList = parsedChannel.ItemList;
+        }
+        else
+        {
+            this.ItemList = null;
         }
 
+        this.Title = parsedChannel.Title;
+        this.Link = parsedChannel.Link;
 
-        ItemList.add(newItem);
-        return true;
+        this.Description = parsedChannel.Description;
+        this.Language = parsedChannel.Language;
+        this.Copyright = parsedChannel.Copyright;
+        this.ManagingEditor = parsedChannel.ManagingEditor;
+        this.WebMaster = parsedChannel.WebMaster;
+        this.PubDate = parsedChannel.PubDate;
+        this.LastBuildDate = parsedChannel.LastBuildDate;
+        this.Category = parsedChannel.Category;
+        this.Cloud = parsedChannel.Cloud;
+        this.TTL = parsedChannel.TTL;
+        this.Image = parsedChannel.Image;
+        this.SkipHours = parsedChannel.SkipHours;
+        this.SkipDays = parsedChannel.SkipDays;
+
     }
+
 
     final public String getTitle()
     {
@@ -308,6 +324,7 @@ public class Channel
 
 
     @Override
+    @NonNull
     public String toString()
     {
         return "Channel:" +
@@ -329,4 +346,17 @@ public class Channel
                 "\n\tNumber of Items: " + ItemList.size() +
            "\nEnd of Channel";
     }
+
+
+    final public boolean linkEquals(Channel parsedChannel)
+    {
+        if (null != this.Link)
+        {
+            return this.Link.equals(parsedChannel.Link);
+        }
+
+
+       return true;
+    }
+
 }

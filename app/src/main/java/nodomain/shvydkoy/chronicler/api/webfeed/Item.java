@@ -218,4 +218,148 @@ public class Item
     }
 
 
+    final public boolean equals(Item parsedItem)
+    {
+        if (this == parsedItem)
+        {
+            return true;
+        }
+
+        if (null != this.Title)
+        {
+            if (!this.Title.equals(parsedItem.Title))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (null != parsedItem.Title)
+                return false;
+        }
+
+        if (null != this.Link)
+        {
+            if (!this.Link.equals(parsedItem.Link))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (null != parsedItem.Link)
+                return false;
+        }
+
+        if (null != this.Description)
+        {
+            if (!this.Description.equals(parsedItem.Description))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (null != parsedItem.Description)
+                return false;
+        }
+
+        if (null != this.Author)
+        {
+            if (!this.Author.equals(parsedItem.Author))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (null != parsedItem.Author)
+                return false;
+        }
+
+        if (null != this.Category)
+        {
+            if (!this.Category.equals(parsedItem.Category))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (null != parsedItem.Category)
+                return false;
+        }
+
+        if (null != this.Enclosure)
+        {
+            if (!this.Enclosure.equals(parsedItem.Enclosure))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (null != parsedItem.Enclosure)
+                return false;
+        }
+
+        if (null != this.Guid)
+        {
+            if (!this.Guid.equals(parsedItem.Guid))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (null != parsedItem.Guid)
+                return false;
+        }
+
+        if (null != this.PubDate)
+        {
+            if (!this.PubDate.equals(parsedItem.PubDate))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (null != parsedItem.PubDate)
+                return false;
+        }
+
+        if (null != this.Source)
+        {
+            if (!this.Source.equals(parsedItem.Source))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (null != parsedItem.Source)
+                return false;
+        }
+
+
+        if (null != this.Content)
+        {
+            if (!this.Content.equals(parsedItem.Content))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (null != parsedItem.Content)
+                return false;
+        }
+
+            return true;
+    }
+
+
+
+
 }
