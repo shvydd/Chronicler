@@ -35,6 +35,12 @@ final class SubsChannel extends Channel
     }
 
 
+    final void update(Channel parsedChannel)
+    {
+
+    }
+
+
 
     final void addNewItems (final Channel parsedChannel)
     {

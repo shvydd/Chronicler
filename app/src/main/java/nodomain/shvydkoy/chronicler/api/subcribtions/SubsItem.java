@@ -19,22 +19,22 @@ public class SubsItem extends Item
         Starred = false;
     }
 
-    final public void MakeStarred()
+    final void MakeStarred()
     {
         Starred = true;
     }
 
-    final public void MakeNotStarred()
+    final void MakeNotStarred()
     {
         Starred = false;
     }
 
-    final public Calendar getRecievedDate()
+    final Calendar getRecievedDate()
     {
         return RecievedDate;
     }
 
-    final public boolean isStarred()
+    final boolean isStarred()
     {
         return Starred;
     }

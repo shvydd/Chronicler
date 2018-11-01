@@ -7,6 +7,12 @@ import java.io.InputStream;
 
 public final class OpenStreamFromTestFeed
 {
+    final public static InputStream fromConstantString(final String constantString)
+    {
+        return new ByteArrayInputStream(constantString.getBytes());
+    }
+
+
     final public static InputStream fromConstantString()
     {
         final String constantString = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
