@@ -26,7 +26,7 @@ public final class Tag
 
 
 
-    public Tag(String Name, boolean Multiple)
+    Tag(final String Name, boolean Multiple)
     {
         if (null == Name)
         {
@@ -46,7 +46,7 @@ public final class Tag
 
     }
 
-    public Tag(String Name)
+    Tag(final String Name)
     {
         if (null == Name)
         {
@@ -67,7 +67,7 @@ public final class Tag
 
 
 
-    public Tag(String Name, Tag Holder)
+    Tag(final String Name, Tag Holder)
     {
         if (null == Name)
         {
@@ -93,7 +93,7 @@ public final class Tag
         this.FieldName = null;
     }
 
-    public Tag(String Name, String Value, Tag Holder)
+    Tag(final String Name, final String Value, Tag Holder)
     {
         if (null == Name)
         {
@@ -121,7 +121,7 @@ public final class Tag
 
 
 
-    final public void nest(Tag tagToNest)
+    final void nest(Tag tagToNest)
     {
         if(tagToNest.IsAttribute || this.IsAttribute)
         {
@@ -137,18 +137,18 @@ public final class Tag
         }
     }
 
-    final public void addAttribute(String Name, String Value)
+    final void addAttribute(final String Name, final String Value)
     {
-        if (IsAttribute == true)
+        if (IsAttribute)
         {
             throw new IllegalArgumentException(EXCEPTION_DESCRIPTION_IF_ATTRIBUTE_WITH_ATTRIBUTE);
         }
         new Tag(Name, Value, this);
     }
 
-    final public void addAttribute(String Name)
+    final void addAttribute(String Name)
     {
-        if (IsAttribute == true)
+        if (IsAttribute)
         {
             throw new IllegalArgumentException(EXCEPTION_DESCRIPTION_IF_ATTRIBUTE_WITH_ATTRIBUTE);
         }
@@ -183,7 +183,7 @@ public final class Tag
 
     final public Tag getParent()
     {
-        if (IsAttribute == false)
+        if (!IsAttribute)
         {
             return Parent;
         }
@@ -205,7 +205,7 @@ public final class Tag
 
     final public Tag getHolder()
     {
-        if (IsAttribute == true)
+        if (IsAttribute)
         {
             return Parent;
         }
@@ -215,7 +215,7 @@ public final class Tag
         }
     }
 
-    final void setFieldName(String fieldName)
+    final void setFieldName(final String fieldName)
     {
         FieldName = fieldName;
     }

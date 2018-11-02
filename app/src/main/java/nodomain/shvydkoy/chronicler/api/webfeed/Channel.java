@@ -46,10 +46,10 @@ public class Channel
 
 
 
-    Channel(String title, String link, String description, String
-            language, String copyright, String managingEditor, String webMaster, String pubDate,
-                   String lastBuildDate, String category, String cloud, String TTL, String image,
-                   String skipHours, String skipDays, ArrayList<Item> ItemList) throws IllegalArgumentException
+    Channel(final String title, final String link, final String description, final String
+            language, final String copyright, final String managingEditor, final String webMaster, final String pubDate,
+            final String lastBuildDate, final String category, final String cloud, final String TTL, final String image,
+            final String skipHours, final String skipDays, final ArrayList<Item> ItemList) throws IllegalArgumentException
     {
         if (StringUtil.isBlank(title))
         {
@@ -92,7 +92,7 @@ public class Channel
     }
 
 
-    protected Channel(Channel parsedChannel)
+    protected Channel(final Channel parsedChannel)
     {
         this.ItemList = parsedChannel.ItemList;
 
@@ -115,7 +115,7 @@ public class Channel
 
     }
 
-    protected Channel(Channel parsedChannel, boolean copyItemList)
+    protected Channel(final Channel parsedChannel,  boolean copyItemList)
     {
         if (copyItemList)
         {
@@ -151,7 +151,7 @@ public class Channel
         return Title;
     }
 
-    final public void setTitle(String title)
+    final public void setTitle(final String title)
     {
         if (StringUtil.isBlank(title))
         {
@@ -164,7 +164,7 @@ public class Channel
         return Link;
     }
 
-    final public void setLink(String link) throws IllegalArgumentException
+    final public void setLink(final String link) throws IllegalArgumentException
     {
         URL URLLink;
         try
@@ -186,7 +186,7 @@ public class Channel
         return Description;
     }
 
-    final public void setDescription(String Description)
+    final public void setDescription(final String Description)
     {
         this.Description = Description;
     }
@@ -196,7 +196,7 @@ public class Channel
         return ItemList;
     }
 
-    final public void setItemList(ArrayList<Item> ItemList)
+    final public void setItemList(final ArrayList<Item> ItemList)
     {
         this.ItemList = ItemList;
     }
@@ -216,7 +216,7 @@ public class Channel
         return Copyright;
     }
 
-    final public void setCopyright(String Copyright)
+    final public void setCopyright(final String Copyright)
     {
         this.Copyright = Copyright;
     }
@@ -226,7 +226,7 @@ public class Channel
         return ManagingEditor;
     }
 
-    final public void setManagingEditor(String ManagingEditor)
+    final public void setManagingEditor(final String ManagingEditor)
     {
         this.ManagingEditor = ManagingEditor;
     }
@@ -236,7 +236,7 @@ public class Channel
         return WebMaster;
     }
 
-    final public void setWebMaster(String WebMaster)
+    final public void setWebMaster(final String WebMaster)
     {
         this.WebMaster = WebMaster;
     }
@@ -246,7 +246,7 @@ public class Channel
         return PubDate;
     }
 
-    final public void setPubDate(String PubDate)
+    final public void setPubDate(final String PubDate)
     {
         this.PubDate = PubDate;
     }
@@ -256,7 +256,7 @@ public class Channel
         return LastBuildDate;
     }
 
-    final public void setLastBuildDate(String LastBuildDate)
+    final public void setLastBuildDate(final String LastBuildDate)
     {
         this.LastBuildDate = LastBuildDate;
     }
@@ -266,7 +266,7 @@ public class Channel
         return Category;
     }
 
-    final public void setCategory(String Category)
+    final public void setCategory(final String Category)
     {
         this.Category = Category;
     }
@@ -276,7 +276,7 @@ public class Channel
         return Cloud;
     }
 
-    final public void setCloud(String Cloud)
+    final public void setCloud(final String Cloud)
     {
         this.Cloud = Cloud;
     }
@@ -286,7 +286,7 @@ public class Channel
         return TTL;
     }
 
-    final public void setTTL(String TTL)
+    final public void setTTL(final String TTL)
     {
         this.TTL = TTL;
     }
@@ -296,7 +296,7 @@ public class Channel
         return Image;
     }
 
-    final public void setImage(String Image)
+    final public void setImage(final String Image)
     {
         this.Image = Image;
     }
@@ -306,7 +306,7 @@ public class Channel
         return SkipHours;
     }
 
-    final public void setSkipHours(String SkipHours)
+    final public void setSkipHours(final String SkipHours)
     {
         this.SkipHours = SkipHours;
     }
@@ -316,7 +316,7 @@ public class Channel
         return SkipDays;
     }
 
-    final public void setSkipDays(String SkipDays)
+    final public void setSkipDays(final String SkipDays)
     {
         this.SkipDays = SkipDays;
     }
@@ -348,7 +348,7 @@ public class Channel
     }
 
 
-    final public boolean linkEquals(Channel parsedChannel)
+    final public boolean linkEquals(final Channel parsedChannel)
     {
         if (null != this.Link)
         {

@@ -31,8 +31,8 @@ public class Item
 
 
 
-    Item(String title, String link, String description, String author, String category,
-                String enclosure, String guid, String pubDate, String source, String content) throws IllegalArgumentException
+    Item(final String title, final String link, final String description, final String author, final String category,
+         final String enclosure, final String guid, final String pubDate, final String source, final String content) throws IllegalArgumentException
     {
         if (StringUtil.isBlank(title))
         {
@@ -70,7 +70,7 @@ public class Item
     }
 
 
-    protected Item(Item parsedItem)
+    protected Item(final Item parsedItem)
     {
         this.Title = parsedItem.Title;
         this.Link = parsedItem.Link;

@@ -9,11 +9,12 @@
 
  3) Try to employ tree in markup, or at least employ tree-borrowed algorithm of matching markup tags with document tag.
 
- 4) Try to add class add a labda, converting Tag String field filled by the Parser with one formatted in general form.
-    For example: time-date strings in RSS2.0, RSS"1.0" and ATOM is are different. And they should be brought to a common
+ 4) Try to add to the Tag class add a lambda, converting Tag String field filled by the Parser with one formatted in general form.
+    For example: time-date strings in RSS2.0, RSS"1.0" and ATOM are different. And they should be brought to a common
     form, recognizable with Channel and Item constructors. Oh yes, change date-time Channel/Item fields type to appropriate one.
 
  5) Bring all the comments to common style (replace russian comments in the Parser).
+
 
  *
  */

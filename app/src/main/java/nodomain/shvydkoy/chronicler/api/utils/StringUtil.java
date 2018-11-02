@@ -8,11 +8,8 @@ final public class StringUtil
     /*
      * @return true if string does not contain at least one alphabetical or numerical symbol
      */
-    final public static boolean isBlank(final String string)
+    public static boolean isBlank(final String string)
     {
-        boolean result = true;
-
-
         if (null != string)
         {
             for (int i=0; i<string.length(); i++)
@@ -24,7 +21,7 @@ final public class StringUtil
             }
         }
 
-        return result;
+        return true;
     }
 
 
@@ -49,12 +46,11 @@ final public class StringUtil
     /*
      * @return better readable in singleline textfields String
      */
-    final public static String removeBlankEdgesAndLineBreaks(final String string)
+    public static String removeBlankEdgesAndLineBreaks(final String string)
     {
         if (null != string)
         {
-            String result = string.trim().replaceAll("\r", "").replaceAll("\n", "");
-            return result;
+            return string.trim().replaceAll("\r", "").replaceAll("\n", "");
         }
 
         return null;

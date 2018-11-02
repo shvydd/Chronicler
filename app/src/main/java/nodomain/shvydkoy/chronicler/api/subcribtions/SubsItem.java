@@ -6,12 +6,12 @@ import nodomain.shvydkoy.chronicler.api.webfeed.Item;
 
 
 
-public class SubsItem extends Item
+final class SubsItem extends Item
 {
     private Calendar RecievedDate;
     private boolean  Starred;
 
-    public SubsItem(Item parsedItem)
+    public SubsItem(final Item parsedItem)
     {
         super(parsedItem);
 

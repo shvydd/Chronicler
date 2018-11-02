@@ -14,12 +14,12 @@ final public class URLUtil
      * @param URLAdress
      * @return true if URLAdress is http or https one, otherwise returns false
      */
-    final public static boolean isHttpOrHttpsURL(final URL URLAdress)
+    public static boolean isHttpOrHttpsURL(final URL URLAdress)
     {
         return "http".equalsIgnoreCase(URLAdress.getProtocol()) || "https".equalsIgnoreCase(URLAdress.getProtocol());
     }
 
-    final public static boolean isValidHttpOrHttpsURL(final String link)
+    public static boolean isValidHttpOrHttpsURL(final String link)
     {
         try
         {
