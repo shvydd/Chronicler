@@ -15,6 +15,8 @@
 
  5) Bring all the comments to common style (replace russian comments in the Parser).
 
+ 6) Creare AttrbuteTag extended Tag
+
 
  *
  */
@@ -33,8 +35,6 @@ import java.util.ArrayList;
 import nodomain.shvydkoy.chronicler.api.webfeed.markup.BankOfMarkups;
 import nodomain.shvydkoy.chronicler.api.webfeed.markup.Markup;
 import nodomain.shvydkoy.chronicler.api.webfeed.markup.Tag;
-import nodomain.shvydkoy.chronicler.api.webfeed.parsingException.FailedParsingException;
-import nodomain.shvydkoy.chronicler.api.webfeed.parsingException.NotifyingParsingException;
 
 import static nodomain.shvydkoy.chronicler.api.utils.URLUtil.isValidHttpOrHttpsURL;
 
@@ -129,7 +129,7 @@ public final class Parser
     }
 
 
-    public final Channel parse(InputStream channelFileStream, String knownChannelURL) throws XmlPullParserException, IOException, FailedParsingException
+    public final Channel parse(InputStream channelFileStream, String knownChannelURL) throws XmlPullParserException, IOException, ParsingFailedException
     {
         parser.setInput(channelFileStream, INPUTENCODING); // If inputEncoding is null, parser determine it on his own
         this.knownChannelURL = knownChannelURL;
@@ -138,7 +138,7 @@ public final class Parser
     }
 
 
-    private Channel fillChannel() throws XmlPullParserException, IOException, FailedParsingException
+    private Channel fillChannel() throws XmlPullParserException, IOException, ParsingFailedException
     {
         Log.d("fillChannel()", "Started");
 
@@ -217,7 +217,7 @@ public final class Parser
                 {
                     fillItem();
                 }
-                catch (NotifyingParsingException e)
+                catch (ParsingNotifyingException e)
                 {
                     Log.d("fillChannel()", "Invalid markup inside an Item");
                 }
@@ -292,7 +292,7 @@ public final class Parser
                     String documentNestedInChannelTagText;
                     try
                     {
-                        //nextText() остановится на теге, закрывающем вложенный в Channel тэг, или выдаст XmlPullParserException. Если XmlPullParserException, бросить FailedParsingException
+                        //nextText() остановится на теге, закрывающем вложенный в Channel тэг, или выдаст XmlPullParserException. Если XmlPullParserException, бросить ParsingFailedException
                         //Т.е. у таких вложенных в Channel тэгов, в которых нет своих вложенных тэгов, вложенных тэгов быть не может. CAPTN
                         documentNestedInChannelTagText = parser.nextText();
 
@@ -309,19 +309,19 @@ public final class Parser
                         }
 
 
-                        /*Если имя закрывающего тэга != имени открывающего - бросить исключение FailedParsingException
+                        /*Если имя закрывающего тэга != имени открывающего - бросить исключение ParsingFailedException
                          * так как парсится Item.
                          */
                         if ( !markupNestedInChannelTag.getName().equals(parser.getName()) )
                         {
                             Log.d("fillChannel()", "Nested in Channel START_TAG and its END_TAG have different names");
-                            throw new FailedParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                            throw new ParsingFailedException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                         }
                     }
                     catch (XmlPullParserException e)
                     {
                         Log.d("fillChannel()", "Nested in Channel START_TAG has no END_TAG");
-                        throw new FailedParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                        throw new ParsingFailedException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                     }
 
 
@@ -377,7 +377,7 @@ public final class Parser
                                 catch (XmlPullParserException e)
                                 {
                                     Log.d("fillChannel()", "Double Nested in Channel START_TAG has no END_TAG");
-                                    throw new FailedParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                                    throw new ParsingFailedException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                                 }
 
                                 if (documentNestedInChannelTagText.length() == 0)
@@ -407,7 +407,7 @@ public final class Parser
                     if (!documentNestedInChannel_END_TAG)
                     {
                         //Тэг, содержащий поле заголовка новости, не закрыт
-                        throw new FailedParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                        throw new ParsingFailedException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                     }
 
                     fillTempChannelField(markupNestedInChannelTagFieldName, documentNestedInChannelTagText.toString(), markupNestedInChannelTag.isMultiple());
@@ -499,14 +499,14 @@ public final class Parser
      * FieldName adds Value to the temp channel field. If markup allows multiple tags, corresponding to the channel field, new callback
      * adds Value to the temp channel field. Otherwise exception.
      */
-    private void fillTempChannelField(String tagFieldName, String tagValue, boolean appendRegime) throws FailedParsingException
+    private void fillTempChannelField(String tagFieldName, String tagValue, boolean appendRegime) throws ParsingFailedException
     {
         switch (tagFieldName)
         {
             case TitleFieldName:
                 if (null != channelTitle && !appendRegime)
                 {
-                    throw new FailedParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingFailedException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != channelTitle)
                 {
@@ -520,7 +520,7 @@ public final class Parser
             case LinkFieldName:
                 if (null != channelLink && !appendRegime)
                 {
-                    throw new FailedParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingFailedException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != channelLink)
                 {
@@ -534,7 +534,7 @@ public final class Parser
             case DescriptionFieldName:
                 if (null != channelDescription && !appendRegime)
                 {
-                    throw new FailedParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingFailedException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != channelDescription)
                 {
@@ -548,7 +548,7 @@ public final class Parser
             case LanguageFieldName:
                 if (null != channelLanguage && !appendRegime)
                 {
-                    throw new FailedParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingFailedException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != channelLanguage)
                 {
@@ -562,7 +562,7 @@ public final class Parser
             case CopyrightFieldName:
                 if (null != channelCopyright && !appendRegime)
                 {
-                    throw new FailedParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingFailedException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != channelCopyright)
                 {
@@ -576,7 +576,7 @@ public final class Parser
             case ManagingEditorFieldName:
                 if (null != channelManagingEditor && !appendRegime)
                 {
-                    throw new FailedParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingFailedException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != channelManagingEditor)
                 {
@@ -590,7 +590,7 @@ public final class Parser
             case WebMasterFieldName:
                 if (null != channelWebMaster && !appendRegime)
                 {
-                    throw new FailedParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingFailedException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != channelWebMaster)
                 {
@@ -604,7 +604,7 @@ public final class Parser
             case PubDateFieldName:
                 if (null != channelPubDate && !appendRegime)
                 {
-                    throw new FailedParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingFailedException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != channelPubDate)
                 {
@@ -618,7 +618,7 @@ public final class Parser
             case LastBuildDateFieldName:
                 if (null != channelLastBuildDate && !appendRegime)
                 {
-                    throw new FailedParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingFailedException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != channelLastBuildDate)
                 {
@@ -632,7 +632,7 @@ public final class Parser
             case CategoryFieldName:
                 if (null != channelCategory && !appendRegime)
                 {
-                    throw new FailedParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingFailedException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != channelCategory)
                 {
@@ -646,7 +646,7 @@ public final class Parser
             case CloudFieldName:
                 if (null != channelCloud && !appendRegime)
                 {
-                    throw new FailedParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingFailedException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != channelCloud)
                 {
@@ -660,7 +660,7 @@ public final class Parser
             case TTLFieldName:
                 if (null != channelTTL && !appendRegime)
                 {
-                    throw new FailedParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingFailedException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != channelTTL)
                 {
@@ -674,7 +674,7 @@ public final class Parser
             case ImageFieldName:
                 if (null != channelImage && !appendRegime)
                 {
-                    throw new FailedParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingFailedException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != channelImage)
                 {
@@ -688,7 +688,7 @@ public final class Parser
             case SkipHoursFieldName:
                 if (null != channelSkipHours && !appendRegime)
                 {
-                    throw new FailedParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingFailedException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != channelSkipHours)
                 {
@@ -702,7 +702,7 @@ public final class Parser
             case SkipDaysFieldName:
                 if (null != channelSkipDays && !appendRegime)
                 {
-                    throw new FailedParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingFailedException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != channelSkipDays)
                 {
@@ -748,7 +748,7 @@ public final class Parser
     }
 
 
-    private void fillItem() throws XmlPullParserException, IOException, NotifyingParsingException
+    private void fillItem() throws XmlPullParserException, IOException, ParsingNotifyingException
     {
         Log.d("fillItem()", "Started");
 
@@ -871,7 +871,7 @@ public final class Parser
                     String documentNestedInItemTagText;
                     try
                     {
-                        //nextText() остановится на теэе, закрывающем вложенный в Item тэг, или выдаст XmlPullParserException. Если XmlPullParserException, бросить NotifyingParsingException
+                        //nextText() остановится на теэе, закрывающем вложенный в Item тэг, или выдаст XmlPullParserException. Если XmlPullParserException, бросить ParsingNotifyingException
                         //Т.е.
                         documentNestedInItemTagText = parser.nextText();
 
@@ -886,19 +886,19 @@ public final class Parser
                         }
 
 
-                        /*Если имя закрывающего тэга != имени открывающего - бросить исключение (или прервать парсинг Item). Бросить NotifyingParsingException
+                        /*Если имя закрывающего тэга != имени открывающего - бросить исключение (или прервать парсинг Item). Бросить ParsingNotifyingException
                          * так как парсится Item.
                          */
                         if ( !markupNestedInItemTag.getName().equals(parser.getName()) )
                         {
                             Log.d("fillItem()", "Nested in Item START_TAG and its END_TAG have different names");
-                            throw new NotifyingParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                            throw new ParsingNotifyingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                         }
                     }
                     catch (XmlPullParserException e)
                     {
                         Log.d("fillItem()", "Nested in Item START_TAG has no END_TAG");
-                        throw new NotifyingParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                        throw new ParsingNotifyingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                     }
 
 
@@ -953,7 +953,7 @@ public final class Parser
                                 catch (XmlPullParserException e)
                                 {
                                     Log.d("fillItem()", "Double Nested in Item START_TAG has no END_TAG");
-                                    throw new NotifyingParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                                    throw new ParsingNotifyingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                                 }
 
                                 if (documentNestedInItemTagText.length() == 0)
@@ -983,7 +983,7 @@ public final class Parser
                     if (!documentNestedInItem_END_TAG)
                     {
                         //Тэг, содержащий поле заголовка новости, не закрыт
-                        throw new NotifyingParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                        throw new ParsingNotifyingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                     }
 
                     fillTempItemField(markupNestedInItemTagFieldName, documentNestedInItemTagText.toString(), markupNestedInItemTag.isMultiple());
@@ -1002,7 +1002,7 @@ public final class Parser
     }
 
 
-    private void fillTempItemField(String tagFieldName, String tagValue, boolean appendRegime) throws NotifyingParsingException
+    private void fillTempItemField(String tagFieldName, String tagValue, boolean appendRegime) throws ParsingNotifyingException
     {
 
         switch (tagFieldName)
@@ -1010,7 +1010,7 @@ public final class Parser
             case ItemTitleFieldName:
                 if (null != itemTitle && !appendRegime)
                 {
-                    throw new NotifyingParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingNotifyingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != itemTitle)
                 {
@@ -1024,7 +1024,7 @@ public final class Parser
             case ItemLinkFieldName:
                 if (null != itemLink && !appendRegime)
                 {
-                    throw new NotifyingParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingNotifyingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != itemLink)
                 {
@@ -1038,7 +1038,7 @@ public final class Parser
             case ItemDescriptionFieldName:
                 if (null != itemDescription && !appendRegime)
                 {
-                    throw new NotifyingParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingNotifyingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != itemDescription)
                 {
@@ -1052,7 +1052,7 @@ public final class Parser
             case ItemAuthorFieldName:
                 if (null != itemAuthor && !appendRegime)
                 {
-                    throw new NotifyingParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingNotifyingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != itemAuthor)
                 {
@@ -1066,7 +1066,7 @@ public final class Parser
             case ItemCategoryFieldName:
                 if (null != itemCategory && !appendRegime)
                 {
-                    throw new NotifyingParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingNotifyingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != itemCategory)
                 {
@@ -1080,7 +1080,7 @@ public final class Parser
             case ItemEnclosureFieldName:
                 if (null != itemEnclosure && !appendRegime)
                 {
-                    throw new NotifyingParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingNotifyingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != itemEnclosure)
                 {
@@ -1094,7 +1094,7 @@ public final class Parser
             case ItemGuidFieldName:
                 if (null != itemGuid && !appendRegime)
                 {
-                    throw new NotifyingParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingNotifyingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != itemGuid)
                 {
@@ -1108,7 +1108,7 @@ public final class Parser
             case ItemPubDateFieldName:
                 if (null != itemPubDate && !appendRegime)
                 {
-                    throw new NotifyingParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingNotifyingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != itemPubDate)
                 {
@@ -1122,7 +1122,7 @@ public final class Parser
             case ItemSourceFieldName:
                 if (null != itemSource && !appendRegime)
                 {
-                    throw new NotifyingParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingNotifyingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != itemSource)
                 {
@@ -1136,7 +1136,7 @@ public final class Parser
             case ItemContentFieldName:
                 if (null != itemContent && !appendRegime)
                 {
-                    throw new NotifyingParsingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
+                    throw new ParsingNotifyingException(EXCEPTION_DESCRIPTION_IF_INVALID_MARKUP);
                 }
                 if (null != itemContent)
                 {
@@ -1154,7 +1154,7 @@ public final class Parser
 
 
 
-    private void assemblyItemAndAddToListIfValid() throws NotifyingParsingException
+    private void assemblyItemAndAddToListIfValid() throws ParsingNotifyingException
     {
 
         Item item;
@@ -1166,7 +1166,7 @@ public final class Parser
         catch (IllegalArgumentException e)
         {
             Log.d("assemblyItem...()", EXCEPTION_DESCRIPTION_IF_ITEM_INVALID);
-            throw new NotifyingParsingException(EXCEPTION_DESCRIPTION_IF_ITEM_INVALID);
+            throw new ParsingNotifyingException(EXCEPTION_DESCRIPTION_IF_ITEM_INVALID);
         }
         finally
         {
@@ -1174,7 +1174,13 @@ public final class Parser
         }
 
 
-        itemList.add(item);
+        for (int i=0; i<itemList.size(); i++)
+        {
+            if (itemList.get(i).equals(item))
+                return;
+        }
+
+        itemList.add(0, item);
         Log.d("assemblyItem...()", "The item has been added to the Channel");
         Log.d("assemblyItem...()", item.toString());
     }

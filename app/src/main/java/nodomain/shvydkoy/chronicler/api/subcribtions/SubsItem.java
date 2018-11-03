@@ -10,28 +10,25 @@ final class SubsItem extends Item
 {
     private Calendar RecievedDate;
     private boolean  Starred;
+    private boolean Hidden;
 
-    public SubsItem(final Item parsedItem)
+    SubsItem(final Item parsedItem)
     {
         super(parsedItem);
 
         RecievedDate = Calendar.getInstance();
         Starred = false;
+        Hidden = false;
     }
 
-    final void MakeStarred()
+    final void makeStarred()
     {
         Starred = true;
     }
 
-    final void MakeNotStarred()
+    final void makeNotStarred()
     {
         Starred = false;
-    }
-
-    final Calendar getRecievedDate()
-    {
-        return RecievedDate;
     }
 
     final boolean isStarred()
@@ -39,6 +36,16 @@ final class SubsItem extends Item
         return Starred;
     }
 
+    final Calendar getRecievedDate()
+    {
+        return RecievedDate;
+    }
+
+    final void makeHidden() { Hidden = true; }
+
+    final void makeNotHidden() { Hidden = false; }
+
+    final boolean isHidden() { return Hidden; }
 
 
 }

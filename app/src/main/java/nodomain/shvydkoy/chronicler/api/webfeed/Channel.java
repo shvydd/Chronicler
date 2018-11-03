@@ -146,7 +146,7 @@ public class Channel
     }
 
 
-    final public String getTitle()
+    public String getTitle()
     {
         return Title;
     }
@@ -181,7 +181,7 @@ public class Channel
         }
     }
 
-    final public String getDescription()
+    public String getDescription()
     {
         return Description;
     }
@@ -261,7 +261,7 @@ public class Channel
         this.LastBuildDate = LastBuildDate;
     }
 
-    final public String getCategory()
+    public String getCategory()
     {
         return Category;
     }
@@ -348,15 +348,9 @@ public class Channel
     }
 
 
-    final public boolean linkEquals(final Channel parsedChannel)
+    final public String hashString()
     {
-        if (null != this.Link)
-        {
-            return this.Link.equals(parsedChannel.Link);
-        }
-
-
-       return true;
+        return Link.toString();
     }
 
 }

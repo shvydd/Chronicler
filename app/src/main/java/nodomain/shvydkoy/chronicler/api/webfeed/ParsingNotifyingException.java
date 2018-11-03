@@ -1,11 +1,11 @@
-package nodomain.shvydkoy.chronicler.api.webfeed.parsingException;
+package nodomain.shvydkoy.chronicler.api.webfeed;
 
-final public class FailedParsingException extends Exception
+final public class ParsingNotifyingException extends Exception
 {
-    final private static String exceptionName = "FailedParsingException: ";
+    final private static String exceptionName = "ParsingNotifyingException: ";
     final private String message;
 
-    public FailedParsingException(String message)
+    public ParsingNotifyingException(String message)
     {
         this.message = message;
     }
@@ -27,7 +27,4 @@ final public class FailedParsingException extends Exception
         return exceptionName;
     }
 
-
 }
-
-

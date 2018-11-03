@@ -1,25 +1,36 @@
 package nodomain.shvydkoy.chronicler.api.subcribtions;
 
-import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.LinkedHashMap;
 
 import nodomain.shvydkoy.chronicler.api.webfeed.Channel;
+import nodomain.shvydkoy.chronicler.api.webfeed.Item;
 
+import static nodomain.shvydkoy.chronicler.api.utils.StringUtil.isBlank;
 
 
 final class SubsChannel extends Channel
 {
-    private final static String FAILED_UPDATE_CHANNEL_CONNECTION_PROBLEM = "Failed to refresh the channel";
-    private final static String FAILED_CREATE_TEMP_FILE = "Failed to save temp channel file";
-
+    private final static String BLANK_STRING = "Field shold must contain at least one alphabetical or numerical symbol";
+    private final static int ITEM_HASHMAP_INITIAL_CAPACITY = 50;
+    private final static float ITEM_HASHMAP_LOAD_FACTOR = (float)0.8;
+    private final static long DEFAULT_ITEM_STORAGE_TIME_IN_MILLI_S = 7*24*60*60*1000;
 
     private Calendar SubsriptionDate;
     private Calendar LastUpdateDate;
-    private ArrayList<SubsItem> SubsItemList;
+    final private LinkedHashMap<String ,SubsItem> SubsItemList;
+
+    private String UserDefinedTitle;
+    private String UserDefinedDescription;
+    private String UserDefinedCategory;
+    private long ItemStorageTimeInMilliS; //if ItemStorageTimeInHours=-1 - until manual deleted
+    private boolean TitleCollision;
+
+    //TODO Channel picture
+    //Channel temp downloaded feed file?
 
 
-
-    SubsChannel(Channel parsedChannel)
+    SubsChannel(final Channel parsedChannel)
     {
         super(parsedChannel,false);
 
@@ -30,145 +41,230 @@ final class SubsChannel extends Channel
         }
 
         this.ItemList = null;
-        SubsItemList = new ArrayList<>();
-        addNewItems(parsedChannel);
+        SubsItemList = new LinkedHashMap<>(ITEM_HASHMAP_INITIAL_CAPACITY, ITEM_HASHMAP_LOAD_FACTOR, false);
+        addItems(parsedChannel);
+
+        UserDefinedTitle = null;
+        UserDefinedDescription = null;
+        UserDefinedCategory = null;
+
+        ItemStorageTimeInMilliS = DEFAULT_ITEM_STORAGE_TIME_IN_MILLI_S;
+
+        //TitleCollision = false; //Maybe user will resolve it itself?
     }
 
 
-    final void update(Channel parsedChannel)
+
+
+    private void deleteItem(final String itemHashString)
     {
-
-    }
-
-
-
-    final void addNewItems (final Channel parsedChannel)
-    {
-        if (parsedChannel.getItemList().size()>0)
+        synchronized (SubsItemList)
         {
-            this.SubsItemList.add(new SubsItem(parsedChannel.getItemList().get(0)));
+            SubsItemList.remove(itemHashString);
+        }
+    }
 
-            throughNewItemsLoop: for (int i=parsedChannel.getItemList().size()-1; i>0 ; i--)
+
+    final void scheduledItemCleaning()
+    {
+        if (ItemStorageTimeInMilliS == -1)
+        {
+            return;
+        }
+
+        Calendar now = Calendar.getInstance();
+        long timeGap;
+
+        synchronized (SubsItemList)
+        {
+            for (LinkedHashMap.Entry<String, SubsItem> entry : SubsItemList.entrySet())
             {
-                for (int j=0; j<SubsItemList.size(); j++)
+                SubsItem subsItem = entry.getValue();
+                timeGap = now.getTimeInMillis() - subsItem.getRecievedDate().getTimeInMillis();
+
+                if (timeGap > ItemStorageTimeInMilliS)
                 {
-                    if ( parsedChannel.getItemList().get(i).equals(SubsItemList.get(j)))
-                    {
-                        continue throughNewItemsLoop;
-                    }
+                    deleteItem(entry.getKey());
                 }
-                this.SubsItemList.add(0, new SubsItem(parsedChannel.getItemList().get(i)));
-            }
 
-        }
-
-    }
-
-    /*final public void update() throws UserNotifyingException
-    {
-        download();
-        Parser parser;
-
-        try
-        {
-           parser  = new Parser();
-        }
-        catch (XmlPullParserException e)
-        {
-            throw new UserNotifyingException(e.getLocalizedMessage());
-        }
-
-        Channel updatedFeed;
-
-        try
-        {
-            updatedFeed = parser.parse(OpenStream.fromMedia(channelTempFile.getPath()), this.getLink().toString());
-        }
-        catch (FileNotFoundException e)
-        {
-            throw new UserNotifyingException(e.getMessage());
-        }
-        catch (XmlPullParserException e)
-        {
-            throw new UserNotifyingException(e.getMessage());
-        }
-        catch (FailedParsingException e)
-        {
-            throw new UserNotifyingException(e.getMessage());
-        }
-        catch (IOException e)
-        {
-            throw new UserNotifyingException(e.getMessage());
-        }
-
-        addNewItems (updatedFeed);
-
-
-    }*/
-
-
-    /*private void download() throws UserNotifyingException
-    {
-        HttpURLConnection channelConnection = null;
-
-        try
-        {
-            channelConnection = (HttpURLConnection) this.getLink().openConnection();
-            InputStream channelStream = channelConnection.getInputStream();
-
-            if ( ! this.getLink().equals(channelConnection.getURL()) )
-            {
-                throw new UserNotifyingException(FAILED_UPDATE_CHANNEL_CONNECTION_PROBLEM);
-            }
-
-            ReadableByteChannel channelByteChannel = Channels.newChannel(channelStream);
-
-            channelTempFile = getTempFile(Context, this.getLink().toString());
-
-            FileOutputStream channelToFileStream = new FileOutputStream(channelTempFile);
-            channelToFileStream.getChannel().transferFrom(channelByteChannel, 0, Long.MAX_VALUE);
-        }
-        catch (IOException e)
-        {
-            Log.d("SubsChannel.Download()", e.getMessage());
-        }
-        finally
-        {
-            try
-            {
-                channelConnection.disconnect();
-            }
-            catch (NullPointerException e)
-            {
-                Log.d("SubsChannel.Download()", e.getMessage());
             }
         }
     }
 
 
-    private File getTempFile(Context context, String url) throws UserNotifyingException
+
+    final void makeItemStarred(final String itemHashString)
     {
-        File file;
-        try
+        SubsItem item = SubsItemList.get(itemHashString);
+
+        if (null != item)
         {
-            String fileName = Uri.parse(url).getLastPathSegment();
-            file = File.createTempFile(fileName, null, context.getCacheDir());
+            item.makeStarred();
         }
-        catch (IOException e)
+    }
+
+    final void makeItemNotStarred(final String itemHashString)
+    {
+        SubsItem item = SubsItemList.get(itemHashString);
+
+        if (null != item)
         {
-            Log.d("SubsCh..l.getTempFile()", e.getMessage());
-            throw new UserNotifyingException(FAILED_CREATE_TEMP_FILE);
+            item.makeNotStarred();
         }
-        finally
+    }
+
+
+    //Will be used on when user pushs "delete news item"
+    final void hideItem(final String itemHashString)
+    {
+        SubsItem item = SubsItemList.get(itemHashString);
+
+        if (null != item)
         {
-            //file.delete();
+            item.makeHidden();
         }
-        return file;
-    }*/
+    }
+
+
+    private void addItem(final Item item)
+    {
+        synchronized (SubsItemList)
+        {
+            if (null == SubsItemList.get(item.hashString()))
+            {
+                SubsItem newSubsItem = new SubsItem(item);
+                SubsItemList.put(newSubsItem.hashString(), newSubsItem);
+            }
+        }
+    }
+
+
+    private void addItems (final Channel parsedChannel)
+    {
+        for (int i=parsedChannel.getItemList().size()-1; i>=0; i--)
+        {
+            addItem(parsedChannel.getItemList().get(i));
+        }
+    }
+
+
+    final boolean refreshAndReturnTrueIfTitleChanged(final Channel parsedChannel)
+    {
+        boolean titleChanged;
+
+        titleChanged = !this.Title.equals(parsedChannel.getTitle());
+
+        this.Title = parsedChannel.getTitle();
+        this.Link = parsedChannel.getLink();
+        this.Description = parsedChannel.getDescription();
+        this.Language = parsedChannel.getLanguage();
+        this.Copyright = parsedChannel.getCopyright();
+        this.ManagingEditor = parsedChannel.getManagingEditor();
+        this.WebMaster = parsedChannel.getWebMaster();
+        this.PubDate = parsedChannel.getPubDate();
+        this.LastBuildDate = parsedChannel.getLastBuildDate();
+        this.Category = parsedChannel.getCategory();
+        this.Cloud = parsedChannel.getCloud();
+        this.TTL = parsedChannel.getTTL();
+        this.Image = parsedChannel.getImage();
+        this.SkipHours = parsedChannel.getSkipHours();
+        this.SkipDays = parsedChannel.getSkipDays();
+
+        addItems(parsedChannel);
+
+        return titleChanged;
+    }
 
 
 
+    final void changeTitle(final String newTitle) throws UserNotifyingException
+    {
+        if (isBlank(newTitle))
+        {
+            throw new UserNotifyingException(BLANK_STRING);
+        }
+
+        UserDefinedTitle = newTitle;
+    }
 
 
+    final void restoreTitle()
+    {
+        UserDefinedTitle = null;
+    }
+
+
+    final void changeDescription(final String newDecription)
+    {
+        UserDefinedTitle = newDecription;
+    }
+
+
+    final void restoreDescription()
+    {
+        UserDefinedDescription = null;
+    }
+
+
+    final void changeCategory(final String newCategory)
+    {
+        UserDefinedCategory = newCategory;
+    }
+
+
+    final void restoreCategory()
+    {
+        UserDefinedCategory = null;
+    }
+
+    final void setItemStorageTime(long itemStorageTimeInMilliS)
+    {
+        ItemStorageTimeInMilliS = itemStorageTimeInMilliS;
+    }
+
+    final void setDefaultItemStorageTime()
+    {
+        ItemStorageTimeInMilliS = DEFAULT_ITEM_STORAGE_TIME_IN_MILLI_S;
+    }
+
+
+    @Override
+    public String getTitle()
+    {
+        if (null != UserDefinedTitle)
+        {
+            return UserDefinedTitle;
+        }
+        else
+        {
+            return Title;
+        }
+    }
+
+    @Override
+    public String getDescription()
+    {
+        if (null != UserDefinedDescription)
+        {
+            return UserDefinedDescription;
+        }
+        else
+        {
+            return Description;
+        }
+    }
+
+    @Override
+    public String getCategory()
+    {
+        if (null != UserDefinedCategory)
+        {
+            return UserDefinedCategory;
+        }
+        else
+        {
+            return Category;
+        }
+    }
 
 }

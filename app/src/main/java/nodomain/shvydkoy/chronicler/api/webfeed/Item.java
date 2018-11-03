@@ -218,7 +218,7 @@ public class Item
     }
 
 
-    final public boolean equals(Item parsedItem)
+    final public boolean equals(final Item parsedItem)
     {
         if (this == parsedItem)
         {
@@ -360,6 +360,9 @@ public class Item
     }
 
 
-
+    final public String hashString()
+    {
+        return Title + Link + PubDate;
+    }
 
 }
