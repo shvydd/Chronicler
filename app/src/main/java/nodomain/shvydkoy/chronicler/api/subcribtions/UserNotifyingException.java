@@ -1,6 +1,6 @@
 package nodomain.shvydkoy.chronicler.api.subcribtions;
 
-final class UserNotifyingException extends Exception
+final public class UserNotifyingException extends Exception
 {
     final private static String exceptionName = "UserNotifyingException: ";
     final private String message;

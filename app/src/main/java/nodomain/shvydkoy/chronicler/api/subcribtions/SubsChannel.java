@@ -9,7 +9,7 @@ import nodomain.shvydkoy.chronicler.api.webfeed.Item;
 import static nodomain.shvydkoy.chronicler.api.utils.StringUtil.isBlank;
 
 
-final class SubsChannel extends Channel
+final public class SubsChannel extends Channel
 {
     private final static String BLANK_STRING = "Field shold must contain at least one alphabetical or numerical symbol";
     private final static int ITEM_HASHMAP_INITIAL_CAPACITY = 50;
@@ -24,7 +24,7 @@ final class SubsChannel extends Channel
     private String UserDefinedDescription;
     private String UserDefinedCategory;
     private long ItemStorageTimeInMilliS; //if ItemStorageTimeInHours=-1 - until manual deleted
-    private boolean TitleCollision;
+    // private boolean TitleCollision; //Maybe user will resolve it itself?
 
     //TODO Channel picture
     //Channel temp downloaded feed file?
@@ -50,7 +50,7 @@ final class SubsChannel extends Channel
 
         ItemStorageTimeInMilliS = DEFAULT_ITEM_STORAGE_TIME_IN_MILLI_S;
 
-        //TitleCollision = false; //Maybe user will resolve it itself?
+
     }
 
 
@@ -82,7 +82,7 @@ final class SubsChannel extends Channel
                 SubsItem subsItem = entry.getValue();
                 timeGap = now.getTimeInMillis() - subsItem.getRecievedDate().getTimeInMillis();
 
-                if (timeGap > ItemStorageTimeInMilliS)
+                if ( !subsItem.isStarred() && timeGap > ItemStorageTimeInMilliS)
                 {
                     deleteItem(entry.getKey());
                 }

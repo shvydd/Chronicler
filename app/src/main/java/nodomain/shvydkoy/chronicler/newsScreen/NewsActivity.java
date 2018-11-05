@@ -1,4 +1,4 @@
-package nodomain.shvydkoy.chronicler;
+package nodomain.shvydkoy.chronicler.newsScreen;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -8,12 +8,13 @@ import android.widget.TextView;
 
 import java.io.InputStream;
 
+import nodomain.shvydkoy.chronicler.R;
 import nodomain.shvydkoy.chronicler.api.webfeed.Channel;
 import nodomain.shvydkoy.chronicler.api.webfeed.Parser;
 
 
 
-public class AllNewsActivity extends AppCompatActivity
+public class NewsActivity extends AppCompatActivity
 {
 
     private static Channel testChannel;
@@ -25,7 +26,7 @@ public class AllNewsActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_all_news);
+        setContentView(R.layout.activity_news);
 
         buttonLeft = (Button) findViewById(R.id.left_button);
         textView = (TextView) findViewById(R.id.Text_View);

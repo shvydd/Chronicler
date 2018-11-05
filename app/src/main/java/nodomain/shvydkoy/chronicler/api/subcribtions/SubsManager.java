@@ -14,7 +14,8 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.Hashtable;
+import java.text.Collator;
+import java.util.ArrayList;
 
 import nodomain.shvydkoy.chronicler.api.utils.loadfile.OpenStream;
 import nodomain.shvydkoy.chronicler.api.webfeed.Channel;
@@ -27,26 +28,26 @@ import nodomain.shvydkoy.chronicler.api.webfeed.ParsingFailedException;
 public final class SubsManager
 {
     private final static String FAILED_CREATE_TEMP_FILE = "Failed to save temp channel file";
-    private final static int CHANNEL_HASHMAP_INITIAL_CAPACITY = 25;
-    private final static float CHANNEL_HASHMAP_LOAD_FACTOR = (float)0.8;
 
-    final private Hashtable<String, SubsChannel> Subscriptions;
-    final private Hashtable<String, SubsChannel> UnconfirmedSubscriptions;
+    final private ArrayList<SubsChannel> Subscriptions;
+    final private ArrayList<SubsChannel> UnconfirmedSubscriptions;
 
 
     //TODO If channels have identical links - merge (What if link is different, but redirects to identical?)
 
-    SubsManager()
+    public SubsManager()
     {
-        Subscriptions = new Hashtable<>(CHANNEL_HASHMAP_INITIAL_CAPACITY, CHANNEL_HASHMAP_LOAD_FACTOR);
-        UnconfirmedSubscriptions = new Hashtable<>(CHANNEL_HASHMAP_INITIAL_CAPACITY, CHANNEL_HASHMAP_LOAD_FACTOR);
+        Subscriptions = new ArrayList<>();
+        UnconfirmedSubscriptions = new ArrayList<>();
     }
 
 
 
-    private void addChannel(final String channelFeed) throws UserNotifyingException
+    public void addChannel(final String channelFeed) throws UserNotifyingException
     {
         SubsChannel newSubsChannel;
+
+        Log.d("addChannel", "UnconfirmedSubscriptions.size() = " + UnconfirmedSubscriptions.size());
 
         try
         {
@@ -68,40 +69,73 @@ public final class SubsManager
             throw new UserNotifyingException(e.getMessage());
         }
 
-        if (null != Subscriptions.get(newSubsChannel.hashString()))
+        Log.d("addChannel", "No exceptions");
+
+        for (int i=0; i<UnconfirmedSubscriptions.size(); i++)
         {
-            //TODO show existent channel
+            if ( UnconfirmedSubscriptions.get(i).getLink().equals(newSubsChannel.getLink()))
+            {
+                //TODO show existent channel
+                return;
+            }
         }
-        else if (null != UnconfirmedSubscriptions.get(newSubsChannel.hashString()))
+
+
+        for (int i=0; i<Subscriptions.size(); i++)
         {
-            //TODO show existent channel
+            if ( Subscriptions.get(i).getLink().equals(newSubsChannel.getLink()))
+            {
+                //TODO show existent channel
+                return;
+            }
         }
-        else if (null == UnconfirmedSubscriptions.get(newSubsChannel.hashString()))
+
+
+        if(UnconfirmedSubscriptions.size() == 0)
         {
-            UnconfirmedSubscriptions.put(newSubsChannel.hashString(), newSubsChannel);
+            UnconfirmedSubscriptions.add(newSubsChannel);
             //TODO show new channel
+            return;
+        }
+        else
+        {
+            Collator collator = Collator.getInstance();
+            for (int i=0; i<UnconfirmedSubscriptions.size(); i++)
+            {
+                if (collator.compare(newSubsChannel.getTitle(), UnconfirmedSubscriptions.get(i).getTitle()) < 0)
+                {
+                    UnconfirmedSubscriptions.add(i, newSubsChannel);
+                    //TODO show new channel
+                    return;
+                }
+            }
+
+            UnconfirmedSubscriptions.add(newSubsChannel);
+            //TODO show new channel
+            return;
         }
 
+
     }
 
 
 
-    final void deleteConfirmedChannel(final String channelHashString)
+    final void deleteConfirmedChannel(int position)
     {
-        Subscriptions.remove(channelHashString);
+        Subscriptions.remove(position);
     }
 
 
-    final void deleteUnconfirmedConfirmedChannel(final String channelHashString)
+    final void deleteUnconfirmedConfirmedChannel(int position)
     {
-        UnconfirmedSubscriptions.remove(channelHashString);
+        UnconfirmedSubscriptions.remove(position);
     }
 
 
 
-    final void updateUnconfirmedChannel(final String channelHashString, final Context context) throws UserNotifyingException
+    final void updateUnconfirmedChannel(int position, final Context context) throws UserNotifyingException
     {
-        SubsChannel channel = UnconfirmedSubscriptions.get(channelHashString);
+        SubsChannel channel = UnconfirmedSubscriptions.get(position);
         File channelTempFile;
 
         try
@@ -166,9 +200,9 @@ public final class SubsManager
     }
 
 
-    final void updateConfirmedChannel(final String channelHashString, final Context context) throws UserNotifyingException
+    final void updateConfirmedChannel(int position, final Context context) throws UserNotifyingException
     {
-        SubsChannel channel = Subscriptions.get(channelHashString);
+        SubsChannel channel = Subscriptions.get(position);
         File channelTempFile;
 
         try
@@ -229,6 +263,36 @@ public final class SubsManager
         {
             //TODO Notify user
         }
+    }
+
+
+    final void confirmChannel(int unconfirmedChannelPosition)
+    {
+       SubsChannel channelToConfirm = UnconfirmedSubscriptions.get(unconfirmedChannelPosition);
+       if (channelToConfirm != null)
+       {
+           if(Subscriptions.size() == 0)
+           {
+               Subscriptions.add(channelToConfirm);
+           }
+           else
+           {
+               Collator collator = Collator.getInstance();
+               for (int i=0; i<Subscriptions.size(); i++)
+               {
+                   if (collator.compare(channelToConfirm.getTitle(), Subscriptions.get(i).getTitle()) < 0)
+                   {
+                       Subscriptions.add(i, channelToConfirm);
+                       break;
+                   }
+               }
+
+               Subscriptions.add(channelToConfirm);
+           }
+
+           UnconfirmedSubscriptions.remove(unconfirmedChannelPosition);
+       }
+
     }
 
 
@@ -296,6 +360,19 @@ public final class SubsManager
         return file;
     }
 
+
+    final public ArrayList<SubsChannel> getAllSubscriptions()
+    {
+
+        Log.d("getAllSubs", "total number of UnconfirmedSubs " + UnconfirmedSubscriptions.size());
+
+        ArrayList<SubsChannel> AllSubscriptions = new ArrayList<>(UnconfirmedSubscriptions);
+        AllSubscriptions.addAll(Subscriptions);
+
+        Log.d("getAllSubs", "total number of subs " + AllSubscriptions.size());
+
+        return AllSubscriptions;
+    }
 
 
 }
