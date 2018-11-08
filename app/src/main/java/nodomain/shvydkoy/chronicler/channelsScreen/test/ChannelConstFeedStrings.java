@@ -1,6 +1,6 @@
-package nodomain.shvydkoy.chronicler.channelsScreen;
+package nodomain.shvydkoy.chronicler.channelsScreen.test;
 
-public class ChannelScreenTest
+public class ChannelConstFeedStrings
 {
     final public static String constantChannel_1 = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
             "<feed xmlns=\"http://www.w3.org/2005/Atom\">\n" +

@@ -1,6 +1,8 @@
 package nodomain.shvydkoy.chronicler.api.subcribtions;
 
+import java.io.File;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedHashMap;
 
 import nodomain.shvydkoy.chronicler.api.webfeed.Channel;
@@ -8,26 +10,31 @@ import nodomain.shvydkoy.chronicler.api.webfeed.Item;
 
 import static nodomain.shvydkoy.chronicler.api.utils.StringUtil.isBlank;
 
-
+@SuppressWarnings("unused")
 final public class SubsChannel extends Channel
 {
-    private final static String BLANK_STRING = "Field shold must contain at least one alphabetical or numerical symbol";
+    private final static String BLANK_STRING = "Field must contain at least one alphabetical or numerical symbol";
     private final static int ITEM_HASHMAP_INITIAL_CAPACITY = 50;
     private final static float ITEM_HASHMAP_LOAD_FACTOR = (float)0.8;
     private final static long DEFAULT_ITEM_STORAGE_TIME_IN_MILLI_S = 7*24*60*60*1000;
 
     private Calendar SubsriptionDate;
     private Calendar LastUpdateDate;
+
     final private LinkedHashMap<String ,SubsItem> SubsItemList;
 
     private String UserDefinedTitle;
     private String UserDefinedDescription;
     private String UserDefinedCategory;
-    private long ItemStorageTimeInMilliS; //if ItemStorageTimeInHours=-1 - until manual deleted
-    // private boolean TitleCollision; //Maybe user will resolve it itself?
+    private long   ItemStorageTimeInMilliS; //if ItemStorageTimeInHours=-1 - until manually deleted
 
-    //TODO Channel picture
-    //Channel temp downloaded feed file?
+    private boolean subsriptionConfirmed;
+    private boolean lastUpdateSuccessful;
+    private int unreadItemsNumber;
+
+    private File LastFeedFile;
+
+
 
 
     SubsChannel(final Channel parsedChannel)
@@ -50,13 +57,17 @@ final public class SubsChannel extends Channel
 
         ItemStorageTimeInMilliS = DEFAULT_ITEM_STORAGE_TIME_IN_MILLI_S;
 
+        subsriptionConfirmed = false;
+        lastUpdateSuccessful = true;
 
+        LastFeedFile = null;
+
+        unreadItemsNumber = SubsItemList.size();
     }
 
 
 
-
-    private void deleteItem(final String itemHashString)
+    final void deleteItem(final String itemHashString)
     {
         synchronized (SubsItemList)
         {
@@ -148,7 +159,7 @@ final public class SubsChannel extends Channel
     }
 
 
-    final boolean refreshAndReturnTrueIfTitleChanged(final Channel parsedChannel)
+    final boolean updateAndReturnTrueIfTitleChanged(final Channel parsedChannel)
     {
         boolean titleChanged;
 
@@ -177,7 +188,7 @@ final public class SubsChannel extends Channel
 
 
 
-    final void changeTitle(final String newTitle) throws UserNotifyingException
+    final void changeUserTitle(final String newTitle) throws UserNotifyingException
     {
         if (isBlank(newTitle))
         {
@@ -188,31 +199,31 @@ final public class SubsChannel extends Channel
     }
 
 
-    final void restoreTitle()
+    final void restoreUserTitle()
     {
         UserDefinedTitle = null;
     }
 
 
-    final void changeDescription(final String newDecription)
+    final void changeUserDescription(final String newDecription)
     {
         UserDefinedTitle = newDecription;
     }
 
 
-    final void restoreDescription()
+    final void restoreUserDescription()
     {
         UserDefinedDescription = null;
     }
 
 
-    final void changeCategory(final String newCategory)
+    final void changeUserCategory(final String newCategory)
     {
         UserDefinedCategory = newCategory;
     }
 
 
-    final void restoreCategory()
+    final void restoreUserCategory()
     {
         UserDefinedCategory = null;
     }
@@ -228,8 +239,8 @@ final public class SubsChannel extends Channel
     }
 
 
-    @Override
-    public String getTitle()
+
+    final public String getUserTitle()
     {
         if (null != UserDefinedTitle)
         {
@@ -241,8 +252,8 @@ final public class SubsChannel extends Channel
         }
     }
 
-    @Override
-    public String getDescription()
+
+    final public String getUserDescription()
     {
         if (null != UserDefinedDescription)
         {
@@ -254,8 +265,8 @@ final public class SubsChannel extends Channel
         }
     }
 
-    @Override
-    public String getCategory()
+
+    final public String getUserCategory()
     {
         if (null != UserDefinedCategory)
         {
@@ -267,4 +278,53 @@ final public class SubsChannel extends Channel
         }
     }
 
+
+    final public boolean isConfirmed()
+    {
+        return subsriptionConfirmed;
+    }
+
+    final public void makeConfirmed()
+    {
+        this.subsriptionConfirmed = true;
+    }
+
+    final public void makeUnconfirmed()
+    {
+        this.subsriptionConfirmed = false;
+    }
+
+    final public File getLastFeedFile()
+    {
+        return LastFeedFile;
+    }
+
+    final public void setLastFeedFile(final File lastFeedFile)
+    {
+        LastFeedFile = lastFeedFile;
+    }
+
+    final public Date getLastUpdateDate()
+    {
+        return LastUpdateDate.getTime();
+    }
+
+    public final boolean isLastUpdateSuccessful()
+    {
+        return lastUpdateSuccessful;
+    }
+
+    public final Integer getUnreadItemsNumber()
+    {
+        return unreadItemsNumber;
+    }
+
+    public final void updateTempFile(final File newTempFile)
+    {
+        if (LastFeedFile != null)
+        {
+            LastFeedFile.delete();
+        }
+        LastFeedFile = newTempFile;
+    }
 }

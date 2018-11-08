@@ -15,7 +15,10 @@ import java.net.HttpURLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.text.Collator;
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 
 import nodomain.shvydkoy.chronicler.api.utils.loadfile.OpenStream;
 import nodomain.shvydkoy.chronicler.api.webfeed.Channel;
@@ -23,31 +26,29 @@ import nodomain.shvydkoy.chronicler.api.webfeed.Parser;
 import nodomain.shvydkoy.chronicler.api.webfeed.ParsingFailedException;
 
 
+//TODO make Subscriptions list synchronized. Replace for loops ( with Subscriptions.get(i) )  with iterator loops
+//TODO If channel has been updated and get a link, identical to other channel link - notify user and merge Items. If identical link belongs to unconfirmed channel - remove reference to the unconfirmed channel (What if link is different, but redirects to identical?)
 
 
 public final class SubsManager
 {
     private final static String FAILED_CREATE_TEMP_FILE = "Failed to save temp channel file";
 
-    final private ArrayList<SubsChannel> Subscriptions;
-    final private ArrayList<SubsChannel> UnconfirmedSubscriptions;
+    final private List<SubsChannel> Subscriptions;
 
 
-    //TODO If channels have identical links - merge (What if link is different, but redirects to identical?)
 
     public SubsManager()
     {
-        Subscriptions = new ArrayList<>();
-        UnconfirmedSubscriptions = new ArrayList<>();
+        Subscriptions = Collections.synchronizedList(new LinkedList<SubsChannel>());
     }
 
 
 
     public void addChannel(final String channelFeed) throws UserNotifyingException
     {
-        SubsChannel newSubsChannel;
+        final SubsChannel newSubsChannel;
 
-        Log.d("addChannel", "UnconfirmedSubscriptions.size() = " + UnconfirmedSubscriptions.size());
 
         try
         {
@@ -71,73 +72,113 @@ public final class SubsManager
 
         Log.d("addChannel", "No exceptions");
 
-        for (int i=0; i<UnconfirmedSubscriptions.size(); i++)
+
+
+        if(Subscriptions.size() == 0)
         {
-            if ( UnconfirmedSubscriptions.get(i).getLink().equals(newSubsChannel.getLink()))
-            {
-                //TODO show existent channel
-                return;
-            }
-        }
-
-
-        for (int i=0; i<Subscriptions.size(); i++)
-        {
-            if ( Subscriptions.get(i).getLink().equals(newSubsChannel.getLink()))
-            {
-                //TODO show existent channel
-                return;
-            }
-        }
-
-
-        if(UnconfirmedSubscriptions.size() == 0)
-        {
-            UnconfirmedSubscriptions.add(newSubsChannel);
+            Subscriptions.add(newSubsChannel);
             //TODO show new channel
-            return;
+            Log.d("addChannel", "Subscriptions.size() == 0 block");
         }
         else
         {
-            Collator collator = Collator.getInstance();
-            for (int i=0; i<UnconfirmedSubscriptions.size(); i++)
+            final Collator collator = Collator.getInstance();
+
+            synchronized (Subscriptions)
             {
-                if (collator.compare(newSubsChannel.getTitle(), UnconfirmedSubscriptions.get(i).getTitle()) < 0)
+                final ListIterator<SubsChannel> existingSubsChannelIt = Subscriptions.listIterator();
+                SubsChannel existingSubsChannel;
+
+                while (existingSubsChannelIt.hasNext())
                 {
-                    UnconfirmedSubscriptions.add(i, newSubsChannel);
-                    //TODO show new channel
-                    return;
+                    existingSubsChannel = existingSubsChannelIt.next();
+
+                    if (existingSubsChannel.getLink().equals(newSubsChannel.getLink()))
+                    {
+                        //TODO show existent channel
+                        return;
+                    }
+
+
+                    if (existingSubsChannel.isConfirmed()  ||  collator.compare(newSubsChannel.getTitle(), existingSubsChannel.getTitle()) < 0)
+                    {
+                        existingSubsChannelIt.previous();
+                        existingSubsChannelIt.add(newSubsChannel);
+                        //TODO show new channel
+                        return;
+                    }
+
                 }
             }
-
-            UnconfirmedSubscriptions.add(newSubsChannel);
+            //If there are only unconfirmed channels in Subscriptions, and title of newChannel is alphabetically bigger than titles of existent channels
+            Subscriptions.add(newSubsChannel);
             //TODO show new channel
-            return;
         }
-
-
     }
 
 
 
-    final void deleteConfirmedChannel(int position)
+    final void deleteChannel(int position)
     {
-        Subscriptions.remove(position);
+        synchronized (Subscriptions)
+        {
+            Subscriptions.remove(position);
+        }
     }
 
 
-    final void deleteUnconfirmedConfirmedChannel(int position)
+
+    final public void confirmChannel(int unconfirmedChannelPosition)
     {
-        UnconfirmedSubscriptions.remove(position);
+        synchronized (Subscriptions)
+        {
+            final SubsChannel channelToConfirm = Subscriptions.get(unconfirmedChannelPosition);
+
+
+            if (channelToConfirm != null)
+            {
+                if ( !channelToConfirm.isConfirmed() )
+                {
+                    channelToConfirm.makeConfirmed();
+                    Subscriptions.remove(unconfirmedChannelPosition);
+
+                    final Collator collator = Collator.getInstance();
+
+
+                    final ListIterator<SubsChannel> existingSubsChannelIt = Subscriptions.listIterator();
+                    SubsChannel existingSubsChannel;
+
+                    while (existingSubsChannelIt.hasNext())
+                    {
+                        existingSubsChannel = existingSubsChannelIt.next();
+
+                        if (!existingSubsChannel.isConfirmed())
+                        {
+                            continue;
+                        }
+
+                        if (collator.compare(channelToConfirm.getTitle(), existingSubsChannel.getTitle()) < 0)
+                        {
+                            existingSubsChannelIt.previous();
+                            existingSubsChannelIt.add(channelToConfirm);
+                            return;
+                        }
+                    }
+                    //If the title of the confirmed channed is alphabetically bigger than titles of other confirmed channels
+                    Subscriptions.add(channelToConfirm);
+                }
+            }
+        }
     }
 
 
 
-    final void updateUnconfirmedChannel(int position, final Context context) throws UserNotifyingException
+    final void updateChannel(int position, final Context context) throws UserNotifyingException
     {
-        SubsChannel channel = UnconfirmedSubscriptions.get(position);
-        File channelTempFile;
+        final SubsChannel channel = Subscriptions.get(position);
 
+
+        final File channelTempFile;
         try
         {
             if (null != channel)
@@ -155,11 +196,11 @@ public final class SubsManager
             throw new UserNotifyingException(e.getMessage());
         }
 
-        InputStream channelUnputStream;
 
+        final InputStream channelInputStream;
         try
         {
-            channelUnputStream = OpenStream.fromMedia(channelTempFile.getPath());
+            channelInputStream = OpenStream.fromMedia(channelTempFile.getPath());
         }
         catch(FileNotFoundException e)
         {
@@ -168,11 +209,10 @@ public final class SubsManager
         }
 
 
-        Channel parsedChannel;
-
+        final Channel parsedChannel;
         try
         {
-            parsedChannel = new Parser().parse(channelUnputStream, channel.getLink().toString());
+            parsedChannel = new Parser().parse(channelInputStream, channel.getLink().toString());
         }
         catch (XmlPullParserException e)
         {
@@ -190,129 +230,34 @@ public final class SubsManager
             throw new UserNotifyingException(e.getMessage());
         }
 
-        boolean titleChanged = channel.refreshAndReturnTrueIfTitleChanged(parsedChannel);
-
-        if (titleChanged)
-        {
-            //TODO Notify user
-        }
-
+        channel.updateAndReturnTrueIfTitleChanged(parsedChannel);
+        channel.updateTempFile(channelTempFile);
     }
 
 
-    final void updateConfirmedChannel(int position, final Context context) throws UserNotifyingException
-    {
-        SubsChannel channel = Subscriptions.get(position);
-        File channelTempFile;
-
-        try
-        {
-            if (null != channel)
-            {
-                channelTempFile = downloadFeedFile(context, channel);
-            }
-            else
-            {
-                return;
-            }
-        }
-        catch (UserNotifyingException e)
-        {
-            Log.d("addChannel", e.getMessage());
-            throw new UserNotifyingException(e.getMessage());
-        }
-
-        InputStream channelUnputStream;
-
-        try
-        {
-            channelUnputStream = OpenStream.fromMedia(channelTempFile.getPath());
-        }
-        catch(FileNotFoundException e)
-        {
-            Log.d("addChannel", e.getMessage());
-            throw new UserNotifyingException(e.getMessage());
-        }
 
 
-        Channel parsedChannel;
-
-        try
-        {
-            parsedChannel = new Parser().parse(channelUnputStream, channel.getLink().toString());
-        }
-        catch (XmlPullParserException e)
-        {
-            Log.d("addChannel", e.getMessage());
-            throw new UserNotifyingException(e.getMessage());
-        }
-        catch (ParsingFailedException e)
-        {
-            Log.d("addChannel", e.getMessage());
-            throw new UserNotifyingException(e.getMessage());
-        }
-        catch (IOException e)
-        {
-            Log.d("addChannel", e.getMessage());
-            throw new UserNotifyingException(e.getMessage());
-        }
-
-        boolean titleChanged = channel.refreshAndReturnTrueIfTitleChanged(parsedChannel);
-
-        if (titleChanged)
-        {
-            //TODO Notify user
-        }
-    }
 
 
-    final void confirmChannel(int unconfirmedChannelPosition)
-    {
-       SubsChannel channelToConfirm = UnconfirmedSubscriptions.get(unconfirmedChannelPosition);
-       if (channelToConfirm != null)
-       {
-           if(Subscriptions.size() == 0)
-           {
-               Subscriptions.add(channelToConfirm);
-           }
-           else
-           {
-               Collator collator = Collator.getInstance();
-               for (int i=0; i<Subscriptions.size(); i++)
-               {
-                   if (collator.compare(channelToConfirm.getTitle(), Subscriptions.get(i).getTitle()) < 0)
-                   {
-                       Subscriptions.add(i, channelToConfirm);
-                       break;
-                   }
-               }
 
-               Subscriptions.add(channelToConfirm);
-           }
-
-           UnconfirmedSubscriptions.remove(unconfirmedChannelPosition);
-       }
-
-    }
-
-
-    private File downloadFeedFile(final Context context, final SubsChannel channel) throws UserNotifyingException  //TODO Get context
+    private File downloadFeedFile(final Context context, final SubsChannel channel) throws UserNotifyingException
     {
         HttpURLConnection connection = null;
-        File channelTempFile;
+        final File channelTempFile;
+        FileOutputStream channelToFileStream = null;
 
         try
         {
             connection = (HttpURLConnection) channel.getLink().openConnection();
-            InputStream channelStream = connection.getInputStream();
+            final InputStream channelStream = connection.getInputStream();
 
-            //TODO check if file at the link is feedfile.
+            //TODO check if file at the link is feedfile. Add reconnects
 
-            ReadableByteChannel channelByteChannel = Channels.newChannel(channelStream);
+            final ReadableByteChannel channelByteChannel = Channels.newChannel(channelStream);
 
             channelTempFile = getTempFile(context , channel.getLink().toString());
 
-            FileOutputStream channelToFileStream = new FileOutputStream(channelTempFile);
+            channelToFileStream = new FileOutputStream(channelTempFile);
             channelToFileStream.getChannel().transferFrom(channelByteChannel, 0, Long.MAX_VALUE);
         }
         catch (IOException e)
@@ -331,6 +276,18 @@ public final class SubsManager
             {
                 Log.d("SubsChannel.Download()", e.getMessage());
             }
+
+            try
+            {
+                if (null != channelToFileStream)
+                    channelToFileStream.close();
+            }
+            catch (IOException e)
+            {
+                Log.d("SubsChannel.Download()", e.getMessage());
+            }
+
+
         }
 
         return channelTempFile;
@@ -339,7 +296,7 @@ public final class SubsManager
 
     private File getTempFile(final Context context, final String url) throws UserNotifyingException
     {
-        File file = null;
+        File file;
         String fileName = Uri.parse(url).getLastPathSegment();
 
         try
@@ -351,27 +308,17 @@ public final class SubsManager
             Log.d("SubsM...r.getTempFile()", e.getMessage());
             throw new UserNotifyingException(FAILED_CREATE_TEMP_FILE);
         }
-        finally
-        {
-            if (null != file && file.isFile())
-                file.delete(); //TODO why "ignored" warning?
-        }
+        // file must not been deleted in "finally", because it can be used during next app run
 
         return file;
     }
 
 
-    final public ArrayList<SubsChannel> getAllSubscriptions()
+    final public List<SubsChannel> getSubscriptions()
     {
+        Log.d("getAllSubs", "total number of subs " + Subscriptions.size());
 
-        Log.d("getAllSubs", "total number of UnconfirmedSubs " + UnconfirmedSubscriptions.size());
-
-        ArrayList<SubsChannel> AllSubscriptions = new ArrayList<>(UnconfirmedSubscriptions);
-        AllSubscriptions.addAll(Subscriptions);
-
-        Log.d("getAllSubs", "total number of subs " + AllSubscriptions.size());
-
-        return AllSubscriptions;
+        return Subscriptions;
     }
 
 

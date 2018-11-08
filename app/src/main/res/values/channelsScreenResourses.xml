@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="last_update_successful">Last update: </string>
+    <color name="last_update_successful_color">#353531</color>
+    <string name="last_update_unsuccessful">Update failed.\nLast successful : </string>
+    <color name="last_update_unsuccessful_color">#a81000</color>
+    <string name="update_channel_button_descripion">Update the channel</string>
+    <string name="unconfirmed_channel_tag_descripion">A subscribtion to this channel has not been confirmed. Click on the channel, appraise the content and either confirm subscibtion or delete it.</string>
+    <string name="channel_image_descripion">Channel picture</string>
+    <string name="channel_item_unread_items_number_prefix">*%d</string>
+</resources>

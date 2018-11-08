@@ -4,11 +4,10 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
 import nodomain.shvydkoy.chronicler.R;
 import nodomain.shvydkoy.chronicler.api.subcribtions.SubsManager;
-import nodomain.shvydkoy.chronicler.api.subcribtions.UserNotifyingException;
+import nodomain.shvydkoy.chronicler.channelsScreen.test.ChannelScreenFillingTest;
 
 
 
@@ -26,6 +25,8 @@ public class ChannelsActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+
         setContentView(R.layout.activity_channels);
 
         subsManager = new SubsManager();
@@ -47,135 +48,7 @@ public class ChannelsActivity extends AppCompatActivity
         }
 
 
-        fillTest();
-    }
-
-
-
-    private void fillTest()
-    {
-        try
-        {
-            subsManager.addChannel(ChannelScreenTest.constantChannel_1);
-            Log.d("addChannel","constantChannel_1 added");
-        }
-        catch (UserNotifyingException e)
-        {
-            Log.d("addChannel", e.getMessage());
-        }
-
-        try
-        {
-            subsManager.addChannel(ChannelScreenTest.constantChannel_2);
-            Log.d("addChannel","constantChannel_2 added");
-        }
-        catch (UserNotifyingException e)
-        {
-            Log.d("addChannel", e.getMessage());
-        }
-
-        try
-        {
-            subsManager.addChannel(ChannelScreenTest.constantChannel_3);
-            Log.d("addChannel","constantChannel_3 added");
-        }
-        catch (UserNotifyingException e)
-        {
-            Log.d("addChannel", e.getMessage());
-
-        }
-
-        try
-        {
-            subsManager.addChannel(ChannelScreenTest.constantChannel_4);
-            Log.d("addChannel","constantChannel_4 added");
-        }
-        catch (UserNotifyingException e)
-        {
-            Log.d("addChannel", e.getMessage());
-
-        }
-
-        try
-        {
-            subsManager.addChannel(ChannelScreenTest.constantChannel_4);
-            Log.d("addChannel","constantChannel_4 added");
-        }
-        catch (UserNotifyingException e)
-        {
-            Log.d("addChannel", e.getMessage());
-
-        }
-        try
-        {
-            subsManager.addChannel(ChannelScreenTest.constantChannel_5);
-            Log.d("addChannel","constantChannel_5 added");
-        }
-        catch (UserNotifyingException e)
-        {
-            Log.d("addChannel", e.getMessage());
-
-        }
-
-        try
-        {
-            subsManager.addChannel(ChannelScreenTest.constantChannel_6);
-            Log.d("addChannel","constantChannel_6 added");
-        }
-        catch (UserNotifyingException e)
-        {
-            Log.d("addChannel", e.getMessage());
-
-        }
-
-
-        try
-        {
-            subsManager.addChannel(ChannelScreenTest.constantChannel_7);
-            Log.d("addChannel","constantChannel_7 added");
-        }
-        catch (UserNotifyingException e)
-        {
-            Log.d("addChannel", e.getMessage());
-
-        }
-
-        try
-        {
-            subsManager.addChannel(ChannelScreenTest.constantChannel_8);
-            Log.d("addChannel","constantChannel_8 added");
-        }
-        catch (UserNotifyingException e)
-        {
-            Log.d("addChannel", e.getMessage());
-
-        }
-
-        try
-        {
-            subsManager.addChannel(ChannelScreenTest.constantChannel_9);
-            Log.d("addChannel","constantChannel_9 added");
-        }
-        catch (UserNotifyingException e)
-        {
-            Log.d("addChannel", e.getMessage());
-
-        }
-
-        try
-        {
-            subsManager.addChannel(ChannelScreenTest.constantChannel_10);
-            Log.d("addChannel","constantChannel_10 added");
-        }
-        catch (UserNotifyingException e)
-        {
-            Log.d("addChannel", e.getMessage());
-
-        }
-
-
-
-        channelListFragment.setChannels(subsManager.getAllSubscriptions());
+        ChannelScreenFillingTest.fillTest(subsManager, channelListFragment);
     }
 
 

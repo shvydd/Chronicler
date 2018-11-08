@@ -17,8 +17,8 @@ final public class OpenStream
     final static private String EXCEPTION_DESCRIPTION_IF_URL_NOT_HTTP_HTTPS = "The URL string is not an http or https adress: ";
 
 
-
-    public static InputStream fromHttpURL(final String httpAdress) throws MalformedURLException, IOException
+    @SuppressWarnings("TryFinallyCanBeTryWithResources")
+    public static InputStream fromHttpURL(final String httpAdress) throws IOException
     {
         URL httpURL = new URL(httpAdress);
 
@@ -44,9 +44,11 @@ final public class OpenStream
 
     }
 
+    @SuppressWarnings("TryFinallyCanBeTryWithResources")
     public static InputStream fromMedia(final String filePath) throws FileNotFoundException, SecurityException
     {
         FileInputStream fis = null;
+
 
         try
         {
@@ -63,14 +65,14 @@ final public class OpenStream
                 }
                 catch(IOException e)
                 {
-
+                    //TODO What if fis.close() throws exception?
                 }
             }
 
         }
     }
 
-    public static InputStream fromString(final String channelFeed) throws FileNotFoundException, SecurityException
+    public static InputStream fromString(final String channelFeed) throws SecurityException
     {
         return new ByteArrayInputStream(channelFeed.getBytes());
     }
