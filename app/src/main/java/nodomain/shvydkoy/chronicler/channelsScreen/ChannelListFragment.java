@@ -7,16 +7,12 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import nodomain.shvydkoy.chronicler.R;
-import nodomain.shvydkoy.chronicler.api.subcribtions.SubsChannel;
+import nodomain.shvydkoy.chronicler.api.subcribtions.SubsManager;
 
 import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
 
@@ -24,10 +20,8 @@ import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
 
 public final class ChannelListFragment extends Fragment
 {
-
-    final private LinkedList<SubsChannel> AllSubscriptions = new LinkedList<>();
     private RecyclerView recyclerView;
-    private ChannelRecyclerViewAdapter channelRecyclerViewAdapter = new ChannelRecyclerViewAdapter(AllSubscriptions);
+    private ChannelRecyclerViewAdapter channelRecyclerViewAdapter;
 
     public ChannelListFragment() {}
 
@@ -61,20 +55,17 @@ public final class ChannelListFragment extends Fragment
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         recyclerView.setAdapter(channelRecyclerViewAdapter);
 
+
         DividerItemDecoration decoration = new DividerItemDecoration(context, VERTICAL);
         recyclerView.addItemDecoration(decoration);
     }
 
 
 
-    public void setChannels(List<SubsChannel> AllSubscriptions)
+    public void setSubsManager(final SubsManager subsManager)
     {
-        this.AllSubscriptions.clear();
-        this.AllSubscriptions.addAll(AllSubscriptions);
-        Log.d("setChannels", "added");
-
+        channelRecyclerViewAdapter = new ChannelRecyclerViewAdapter(subsManager);
         channelRecyclerViewAdapter.notifyDataSetChanged();
-
     }
 
 

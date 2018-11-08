@@ -4,6 +4,7 @@ import android.util.Log;
 
 import nodomain.shvydkoy.chronicler.api.subcribtions.SubsManager;
 import nodomain.shvydkoy.chronicler.api.subcribtions.UserNotifyingException;
+import nodomain.shvydkoy.chronicler.api.utils.loadfile.OpenStream;
 import nodomain.shvydkoy.chronicler.channelsScreen.ChannelListFragment;
 
 
@@ -14,7 +15,7 @@ public final class ChannelScreenFillingTest
     {
         try
         {
-            subsManager.addChannel(ChannelConstFeedStrings.constantChannel_1);
+            subsManager.addChannel(OpenStream.fromString(ChannelConstFeedStrings.constantChannel_1));
             Log.d("addChannel","constantChannel_1 added");
         }
         catch (UserNotifyingException e)
@@ -24,7 +25,7 @@ public final class ChannelScreenFillingTest
 
         try
         {
-            subsManager.addChannel(ChannelConstFeedStrings.constantChannel_2);
+            subsManager.addChannel(OpenStream.fromString(ChannelConstFeedStrings.constantChannel_2));
             Log.d("addChannel","constantChannel_2 added");
         }
         catch (UserNotifyingException e)
@@ -34,7 +35,7 @@ public final class ChannelScreenFillingTest
 
         try
         {
-            subsManager.addChannel(ChannelConstFeedStrings.constantChannel_3);
+            subsManager.addChannel(OpenStream.fromString(ChannelConstFeedStrings.constantChannel_3));
             Log.d("addChannel","constantChannel_3 added");
         }
         catch (UserNotifyingException e)
@@ -45,7 +46,7 @@ public final class ChannelScreenFillingTest
 
         try
         {
-            subsManager.addChannel(ChannelConstFeedStrings.constantChannel_4);
+            subsManager.addChannel(OpenStream.fromString(ChannelConstFeedStrings.constantChannel_4));
             Log.d("addChannel","constantChannel_4 added");
         }
         catch (UserNotifyingException e)
@@ -56,7 +57,7 @@ public final class ChannelScreenFillingTest
 
         try
         {
-            subsManager.addChannel(ChannelConstFeedStrings.constantChannel_4);
+            subsManager.addChannel(OpenStream.fromString(ChannelConstFeedStrings.constantChannel_4));
             Log.d("addChannel","constantChannel_4 added");
         }
         catch (UserNotifyingException e)
@@ -66,7 +67,7 @@ public final class ChannelScreenFillingTest
         }
         try
         {
-            subsManager.addChannel(ChannelConstFeedStrings.constantChannel_5);
+            subsManager.addChannel(OpenStream.fromString(ChannelConstFeedStrings.constantChannel_5));
             Log.d("addChannel","constantChannel_5 added");
         }
         catch (UserNotifyingException e)
@@ -77,7 +78,7 @@ public final class ChannelScreenFillingTest
 
         try
         {
-            subsManager.addChannel(ChannelConstFeedStrings.constantChannel_6);
+            subsManager.addChannel(OpenStream.fromString(ChannelConstFeedStrings.constantChannel_6));
             Log.d("addChannel","constantChannel_6 added");
         }
         catch (UserNotifyingException e)
@@ -89,7 +90,7 @@ public final class ChannelScreenFillingTest
 
         try
         {
-            subsManager.addChannel(ChannelConstFeedStrings.constantChannel_7);
+            subsManager.addChannel(OpenStream.fromString(ChannelConstFeedStrings.constantChannel_7));
             Log.d("addChannel","constantChannel_7 added");
         }
         catch (UserNotifyingException e)
@@ -100,7 +101,7 @@ public final class ChannelScreenFillingTest
 
         try
         {
-            subsManager.addChannel(ChannelConstFeedStrings.constantChannel_8);
+            subsManager.addChannel(OpenStream.fromString(ChannelConstFeedStrings.constantChannel_8));
             Log.d("addChannel","constantChannel_8 added");
         }
         catch (UserNotifyingException e)
@@ -111,7 +112,7 @@ public final class ChannelScreenFillingTest
 
         try
         {
-            subsManager.addChannel(ChannelConstFeedStrings.constantChannel_9);
+            subsManager.addChannel(OpenStream.fromString(ChannelConstFeedStrings.constantChannel_9));
             Log.d("addChannel","constantChannel_9 added");
         }
         catch (UserNotifyingException e)
@@ -122,7 +123,7 @@ public final class ChannelScreenFillingTest
 
         try
         {
-            subsManager.addChannel(ChannelConstFeedStrings.constantChannel_10);
+            subsManager.addChannel(OpenStream.fromString(ChannelConstFeedStrings.constantChannel_10));
             Log.d("addChannel","constantChannel_10 added");
         }
         catch (UserNotifyingException e)
@@ -137,7 +138,7 @@ public final class ChannelScreenFillingTest
 
         // Log.d("fillTest", "all channels added, 3rd confirmed");
 
-        channelListFragment.setChannels(subsManager.getSubscriptions());
+        channelListFragment.setSubsManager(subsManager);
 
         Log.d("fillTest", "Channels have been set");
     }

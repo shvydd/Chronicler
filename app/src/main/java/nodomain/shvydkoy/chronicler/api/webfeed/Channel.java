@@ -146,7 +146,7 @@ public class Channel
     }
 
 
-    public String getTitle()
+    final public String getTitle()
     {
         return Title;
     }
@@ -181,7 +181,7 @@ public class Channel
         }
     }
 
-    public String getDescription()
+    final public String getDescription()
     {
         return Description;
     }
@@ -261,7 +261,7 @@ public class Channel
         this.LastBuildDate = LastBuildDate;
     }
 
-    public String getCategory()
+    final public String getCategory()
     {
         return Category;
     }

@@ -12,6 +12,8 @@ final class SubsItem extends Item
     private boolean  Starred;
     private boolean  Hidden;
     private boolean  Read;
+    private boolean  ReObservedAtLastUpdate;
+    private boolean  CheckedAndNotReObservedAtLastUpdate;
 
     SubsItem(final Item parsedItem)
     {
@@ -21,7 +23,16 @@ final class SubsItem extends Item
         Starred = false;
         Hidden = false;
         Read = false;
+        ReObservedAtLastUpdate = false;
+        CheckedAndNotReObservedAtLastUpdate = false;
     }
+
+    final Calendar getRecievedDate()
+    {
+        return RecievedDate;
+    }
+
+
 
     final void makeStarred()
     {
@@ -40,16 +51,11 @@ final class SubsItem extends Item
 
 
 
-    final Calendar getRecievedDate()
+    final void makeHidden()
     {
-        return RecievedDate;
+        Hidden = true;
+        Starred = false;
     }
-
-
-
-    final void makeHidden() { Hidden = true; }
-
-    final void makeNotHidden() { Hidden = false; }
 
     final boolean isHidden() { return Hidden; }
 
@@ -60,5 +66,22 @@ final class SubsItem extends Item
     final void makeUnRead() { Read = false; }
 
     final boolean isRead() { return Read; }
+
+
+
+    final void makeReObservedAtLastUpdate() { ReObservedAtLastUpdate = true; }
+
+    final void makeNotReObservedAtLastUpdate() { ReObservedAtLastUpdate = false; }
+
+    final boolean isReObservedAtLastUpdate() { return ReObservedAtLastUpdate; }
+
+
+
+    final void makeCheckedAtLastUpdate() { CheckedAndNotReObservedAtLastUpdate = true; }
+
+    final void makeNotCheckedAtLastUpdate() { CheckedAndNotReObservedAtLastUpdate = false; }
+
+    final boolean isCheckedAtLastUpdate() { return CheckedAndNotReObservedAtLastUpdate; }
+
 
 }

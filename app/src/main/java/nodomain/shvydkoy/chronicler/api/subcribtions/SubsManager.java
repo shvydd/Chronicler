@@ -45,14 +45,14 @@ public final class SubsManager
 
 
 
-    public void addChannel(final String channelFeed) throws UserNotifyingException
+    public void addChannel(final InputStream channelFeedStream) throws UserNotifyingException
     {
         final SubsChannel newSubsChannel;
 
 
         try
         {
-            newSubsChannel = new SubsChannel(new Parser().parse(OpenStream.fromString(channelFeed), null));
+            newSubsChannel = new SubsChannel(new Parser().parse(channelFeedStream, null));
         }
         catch (XmlPullParserException e)
         {
@@ -120,10 +120,7 @@ public final class SubsManager
 
     final void deleteChannel(int position)
     {
-        synchronized (Subscriptions)
-        {
-            Subscriptions.remove(position);
-        }
+        Subscriptions.remove(position);
     }
 
 
@@ -175,6 +172,7 @@ public final class SubsManager
 
     final void updateChannel(int position, final Context context) throws UserNotifyingException
     {
+        //TODO Is syncronization required?
         final SubsChannel channel = Subscriptions.get(position);
 
 
@@ -193,7 +191,8 @@ public final class SubsManager
         catch (UserNotifyingException e)
         {
             Log.d("addChannel", e.getMessage());
-            throw new UserNotifyingException(e.getMessage());
+            channel.setLastUpdateSuccessful(false);
+            return;
         }
 
 
@@ -205,7 +204,8 @@ public final class SubsManager
         catch(FileNotFoundException e)
         {
             Log.d("addChannel", e.getMessage());
-            throw new UserNotifyingException(e.getMessage());
+            channel.setLastUpdateSuccessful(false);
+            return;
         }
 
 
@@ -216,22 +216,26 @@ public final class SubsManager
         }
         catch (XmlPullParserException e)
         {
+            channel.setLastUpdateSuccessful(false);
             Log.d("addChannel", e.getMessage());
-            throw new UserNotifyingException(e.getMessage());
+            return;
         }
         catch (ParsingFailedException e)
         {
             Log.d("addChannel", e.getMessage());
-            throw new UserNotifyingException(e.getMessage());
+            channel.setLastUpdateSuccessful(false);
+            return;
         }
         catch (IOException e)
         {
             Log.d("addChannel", e.getMessage());
-            throw new UserNotifyingException(e.getMessage());
+            channel.setLastUpdateSuccessful(false);
+            return;
         }
 
         channel.updateAndReturnTrueIfTitleChanged(parsedChannel);
         channel.updateTempFile(channelTempFile);
+        channel.setLastUpdateSuccessful(true);
     }
 
 
@@ -251,7 +255,7 @@ public final class SubsManager
             connection = (HttpURLConnection) channel.getLink().openConnection();
             final InputStream channelStream = connection.getInputStream();
 
-            //TODO check if file at the link is feedfile. Add reconnects
+            //TODO check if file at the link is feedfile. Add reconnects. Add response check
 
             final ReadableByteChannel channelByteChannel = Channels.newChannel(channelStream);
 

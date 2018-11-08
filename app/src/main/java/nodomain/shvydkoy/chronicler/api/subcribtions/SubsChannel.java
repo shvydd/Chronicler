@@ -2,8 +2,11 @@ package nodomain.shvydkoy.chronicler.api.subcribtions;
 
 import java.io.File;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 
 import nodomain.shvydkoy.chronicler.api.webfeed.Channel;
 import nodomain.shvydkoy.chronicler.api.webfeed.Item;
@@ -14,14 +17,12 @@ import static nodomain.shvydkoy.chronicler.api.utils.StringUtil.isBlank;
 final public class SubsChannel extends Channel
 {
     private final static String BLANK_STRING = "Field must contain at least one alphabetical or numerical symbol";
-    private final static int ITEM_HASHMAP_INITIAL_CAPACITY = 50;
-    private final static float ITEM_HASHMAP_LOAD_FACTOR = (float)0.8;
     private final static long DEFAULT_ITEM_STORAGE_TIME_IN_MILLI_S = 7*24*60*60*1000;
 
     private Calendar SubsriptionDate;
     private Calendar LastUpdateDate;
 
-    final private LinkedHashMap<String ,SubsItem> SubsItemList;
+    final private List<SubsItem> SubsItemList;
 
     private String UserDefinedTitle;
     private String UserDefinedDescription;
@@ -33,6 +34,7 @@ final public class SubsChannel extends Channel
     private int unreadItemsNumber;
 
     private File LastFeedFile;
+    private File ImageFile; //TODO Make image file infrastructure
 
 
 
@@ -40,15 +42,12 @@ final public class SubsChannel extends Channel
     SubsChannel(final Channel parsedChannel)
     {
         super(parsedChannel,false);
+        this.ItemList = null;
 
         LastUpdateDate = Calendar.getInstance();
-        if (SubsriptionDate == null)
-        {
-            SubsriptionDate = Calendar.getInstance();
-        }
+        if (SubsriptionDate == null)  { SubsriptionDate = Calendar.getInstance(); }
 
-        this.ItemList = null;
-        SubsItemList = new LinkedHashMap<>(ITEM_HASHMAP_INITIAL_CAPACITY, ITEM_HASHMAP_LOAD_FACTOR, false);
+        SubsItemList = Collections.synchronizedList(new LinkedList<SubsItem>());
         addItems(parsedChannel);
 
         UserDefinedTitle = null;
@@ -61,78 +60,47 @@ final public class SubsChannel extends Channel
         lastUpdateSuccessful = true;
 
         LastFeedFile = null;
+        ImageFile = null;
 
         unreadItemsNumber = SubsItemList.size();
     }
 
 
 
-    final void deleteItem(final String itemHashString)
+    final void deleteItem(int position)
     {
         synchronized (SubsItemList)
         {
-            SubsItemList.remove(itemHashString);
-        }
-    }
-
-
-    final void scheduledItemCleaning()
-    {
-        if (ItemStorageTimeInMilliS == -1)
-        {
-            return;
-        }
-
-        Calendar now = Calendar.getInstance();
-        long timeGap;
-
-        synchronized (SubsItemList)
-        {
-            for (LinkedHashMap.Entry<String, SubsItem> entry : SubsItemList.entrySet())
+            if ( !SubsItemList.get(position).isRead() )
             {
-                SubsItem subsItem = entry.getValue();
-                timeGap = now.getTimeInMillis() - subsItem.getRecievedDate().getTimeInMillis();
-
-                if ( !subsItem.isStarred() && timeGap > ItemStorageTimeInMilliS)
-                {
-                    deleteItem(entry.getKey());
-                }
-
+                unreadItemsNumber--;
             }
+            SubsItemList.remove(position);
         }
     }
 
 
-
-    final void makeItemStarred(final String itemHashString)
+    final void makeItemStarred(int position)
     {
-        SubsItem item = SubsItemList.get(itemHashString);
-
-        if (null != item)
-        {
-            item.makeStarred();
-        }
-    }
-
-    final void makeItemNotStarred(final String itemHashString)
-    {
-        SubsItem item = SubsItemList.get(itemHashString);
-
-        if (null != item)
-        {
-            item.makeNotStarred();
-        }
+        SubsItemList.get(position).makeStarred();
     }
 
 
-    //Will be used on when user pushs "delete news item"
-    final void hideItem(final String itemHashString)
+    final void makeItemNotStarred(int position)
     {
-        SubsItem item = SubsItemList.get(itemHashString);
+        SubsItemList.get(position).makeNotStarred();
+    }
 
-        if (null != item)
+
+    final void hideItem(int position)
+    {
+        synchronized (SubsItemList)
         {
-            item.makeHidden();
+            if (!SubsItemList.get(position).isRead())
+            {
+                unreadItemsNumber--;
+            }
+            SubsItemList.get(position).makeHidden();
         }
     }
 
@@ -141,10 +109,41 @@ final public class SubsChannel extends Channel
     {
         synchronized (SubsItemList)
         {
-            if (null == SubsItemList.get(item.hashString()))
+            final ListIterator<SubsItem> existingSubsItemIt = SubsItemList.listIterator();
+            SubsItem existingSubsItem;
+
+            while (existingSubsItemIt.hasNext())
             {
-                SubsItem newSubsItem = new SubsItem(item);
-                SubsItemList.put(newSubsItem.hashString(), newSubsItem);
+                existingSubsItem = existingSubsItemIt.next();
+
+                if (item.equals(existingSubsItem))
+                {
+                    existingSubsItem.makeReObservedAtLastUpdate();
+                    return;
+                }
+
+                existingSubsItem.makeCheckedAtLastUpdate();
+            }
+            SubsItemList.add(0, new SubsItem(item));
+            unreadItemsNumber++;
+        }
+    }
+
+
+    private void makeUncheckedItemsNotReobserved()
+    {
+        synchronized (SubsItemList)
+        {
+            for (SubsItem item : SubsItemList)
+            {
+                if ( !item.isCheckedAtLastUpdate() )
+                {
+                    item.makeNotReObservedAtLastUpdate();
+                }
+                else
+                {
+                    item.makeNotCheckedAtLastUpdate();
+                }
             }
         }
     }
@@ -152,11 +151,14 @@ final public class SubsChannel extends Channel
 
     private void addItems (final Channel parsedChannel)
     {
-        for (int i=parsedChannel.getItemList().size()-1; i>=0; i--)
+        for (Item item : parsedChannel.getItemList())
         {
-            addItem(parsedChannel.getItemList().get(i));
+            addItem(item);
         }
+
+        makeUncheckedItemsNotReobserved();
     }
+
 
 
     final boolean updateAndReturnTrueIfTitleChanged(final Channel parsedChannel)
@@ -181,10 +183,61 @@ final public class SubsChannel extends Channel
         this.SkipHours = parsedChannel.getSkipHours();
         this.SkipDays = parsedChannel.getSkipDays();
 
+        this.LastUpdateDate = Calendar.getInstance();
         addItems(parsedChannel);
 
         return titleChanged;
     }
+
+
+
+    final void hiddenItemsRemoval()
+    {
+        if (ItemStorageTimeInMilliS == -1) { return; }
+
+
+        synchronized (SubsItemList)
+        {
+            Calendar now = Calendar.getInstance();
+            long itemStorageTime;
+
+            final ListIterator<SubsItem> subsItemIt = SubsItemList.listIterator();
+            SubsItem subsItem;
+            while (subsItemIt.hasNext())
+            {
+                subsItem = subsItemIt.next();
+
+                if (subsItem.isStarred())
+                {
+                    continue;
+                }
+
+                //If News Item was reobserved in last update or channel had not been updated after the News Item was reobserved.
+                if (subsItem.isReObservedAtLastUpdate() || LastUpdateDate.getTimeInMillis() <= subsItem.getRecievedDate().getTimeInMillis()  )
+                {
+                    continue;
+                }
+
+                if ( (now.getTimeInMillis() - subsItem.getRecievedDate().getTimeInMillis()) > ItemStorageTimeInMilliS)
+                {
+                    subsItemIt.remove();
+                }
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -284,7 +337,7 @@ final public class SubsChannel extends Channel
         return subsriptionConfirmed;
     }
 
-    final public void makeConfirmed()
+    final void makeConfirmed()
     {
         this.subsriptionConfirmed = true;
     }
@@ -309,6 +362,11 @@ final public class SubsChannel extends Channel
         return LastUpdateDate.getTime();
     }
 
+    void setLastUpdateSuccessful(boolean status)
+    {
+        lastUpdateSuccessful = status;
+    }
+
     public final boolean isLastUpdateSuccessful()
     {
         return lastUpdateSuccessful;
@@ -319,7 +377,7 @@ final public class SubsChannel extends Channel
         return unreadItemsNumber;
     }
 
-    public final void updateTempFile(final File newTempFile)
+    final void updateTempFile(final File newTempFile)
     {
         if (LastFeedFile != null)
         {

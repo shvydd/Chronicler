@@ -31,6 +31,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.ListIterator;
 
 import nodomain.shvydkoy.chronicler.api.webfeed.markup.BankOfMarkups;
 import nodomain.shvydkoy.chronicler.api.webfeed.markup.Markup;
@@ -1174,10 +1175,16 @@ public final class Parser
         }
 
 
-        for (int i=0; i<itemList.size(); i++)
+        ListIterator<Item> itemListIt = itemList.listIterator();
+        Item existingItem;
+        while (itemListIt.hasNext())
         {
-            if (itemList.get(i).equals(item))
+            existingItem = itemListIt.next();
+
+            if (existingItem.equals(item))
+            {
                 return;
+            }
         }
 
         itemList.add(0, item);

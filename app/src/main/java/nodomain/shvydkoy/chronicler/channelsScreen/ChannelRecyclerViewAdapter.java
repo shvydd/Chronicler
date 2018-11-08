@@ -11,11 +11,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
-import java.util.LinkedList;
 import java.util.Locale;
 
 import nodomain.shvydkoy.chronicler.R;
 import nodomain.shvydkoy.chronicler.api.subcribtions.SubsChannel;
+import nodomain.shvydkoy.chronicler.api.subcribtions.SubsManager;
 
 
 
@@ -23,12 +23,13 @@ public final class ChannelRecyclerViewAdapter extends RecyclerView.Adapter<Chann
 {
     private final static SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, HH:mm", Locale.US);
 
-    private final LinkedList<SubsChannel> AllSubscriptions;
+    private final SubsManager subsManager;
 
 
-    ChannelRecyclerViewAdapter(LinkedList<SubsChannel> AllSubscriptions)
+
+    ChannelRecyclerViewAdapter(SubsManager subsManager)
     {
-        this.AllSubscriptions = AllSubscriptions;
+        this.subsManager = subsManager;
     }
 
 
@@ -45,7 +46,7 @@ public final class ChannelRecyclerViewAdapter extends RecyclerView.Adapter<Chann
     {
         Resources resources = holder.itemView.getContext().getResources();
 
-        holder.channel = AllSubscriptions.get(position);
+        holder.channel = subsManager.getSubscriptions().get(position);
 
         holder.title.setText(holder.channel.getTitle());
         holder.updateDateTime.setText( dateFormat.format(holder.channel.getLastUpdateDate()) );
@@ -83,25 +84,21 @@ public final class ChannelRecyclerViewAdapter extends RecyclerView.Adapter<Chann
             holder.unreadItemsNumber.setText("");
         }
 
-        /*holder.updateChannelButton.setOnClickListener(new View.OnClickListener()
-        {
-            public void onClick(View parent)
-            {
-                holder.channel.makeConfirmed();
-            }
-        });*/
+
+
 
     }
+
 
 
     @Override
     public int getItemCount()
     {
-        return AllSubscriptions.size();
+        return subsManager.getSubscriptions().size();
     }
 
 
-    public class ViewHolder extends RecyclerView.ViewHolder
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener
     {
         final View parentView;
 
@@ -113,12 +110,15 @@ public final class ChannelRecyclerViewAdapter extends RecyclerView.Adapter<Chann
         final ImageView unconfirmedTag;
         final TextView unreadItemsNumber;
         final ImageButton updateChannelButton;
+        final ImageView channelImage;
 
 
 
         ViewHolder(View view)
         {
             super(view);
+
+            view.setOnClickListener(this);
 
             parentView = view;
             title = view.findViewById(R.id.channel_item_title);
@@ -127,8 +127,18 @@ public final class ChannelRecyclerViewAdapter extends RecyclerView.Adapter<Chann
             unconfirmedTag = view.findViewById(R.id.channel_item_unconfirmed_channel_tag);
             unreadItemsNumber = view.findViewById(R.id.channel_item_unread_items_number);
             updateChannelButton = view.findViewById(R.id.channel_item_update_button);
-        }
+            channelImage = view.findViewById(R.id.channel_item_image);
 
+            updateChannelButton.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    subsManager.confirmChannel(getAdapterPosition());
+                    notifyDataSetChanged();
+                }
+            });
+        }
 
 
 
@@ -138,6 +148,19 @@ public final class ChannelRecyclerViewAdapter extends RecyclerView.Adapter<Chann
         {
             //TODO
             return super.toString() + " '" + title.getText() + "'";
+        }
+
+
+        @Override
+        public void onClick(View view)
+        {
+
+            if (channelImage.getVisibility() == View.VISIBLE)
+                channelImage.setVisibility(View.GONE);
+            else
+                channelImage.setVisibility(View.VISIBLE);
+
+            //notifyDataSetChanged();
         }
 
     }
